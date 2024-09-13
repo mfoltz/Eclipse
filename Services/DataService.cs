@@ -184,12 +184,13 @@ internal static class DataService
         public string ExpertiseType { get; set; } = ((WeaponType)int.Parse(expertiseType)).ToString();
         public List<string> BonusStats { get; set; } = Enumerable.Range(0, bonusStats.Length / 2).Select(i => ((WeaponStatType)int.Parse(bonusStats.Substring(i * 2, 2))).ToString()).ToList();
     }
-    internal class QuestData(string progress, string goal, string target, string isVBlood)
+    internal class QuestData(string progress, string goal, string target, string isVBlood, string level)
     {
         public int Progress { get; set; } = int.Parse(progress);
         public int Goal { get; set; } = int.Parse(goal);
         public string Target { get; set; } = target;
         public bool IsVBlood { get; set; } = bool.Parse(isVBlood);
+        public int Level { get; set; } = int.Parse(level);
     }
     internal class  ConfigData
     {
@@ -312,10 +313,12 @@ internal static class DataService
         CanvasService.DailyGoal = dailyQuestData.Goal;
         CanvasService.DailyTarget = dailyQuestData.Target;
         CanvasService.DailyVBlood = dailyQuestData.IsVBlood;
+        CanvasService.DailyLevel = dailyQuestData.Level;
 
         CanvasService.WeeklyProgress = weeklyQuestData.Progress;
         CanvasService.WeeklyGoal = weeklyQuestData.Goal;
         CanvasService.WeeklyTarget = weeklyQuestData.Target;
         CanvasService.WeeklyVBlood = weeklyQuestData.IsVBlood;
+        CanvasService.WeeklyLevel = weeklyQuestData.Level;
     }
 }

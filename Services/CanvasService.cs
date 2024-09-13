@@ -108,6 +108,7 @@ internal class CanvasService
     public static int DailyGoal = 0;
     public static string DailyTarget = "";
     public static bool DailyVBlood = false;
+    public static int DailyLevel = 0;
 
     static GameObject WeeklyQuestObject;
     static LocalizedText WeeklyQuestHeader;
@@ -117,6 +118,7 @@ internal class CanvasService
     public static int WeeklyGoal = 0;
     public static string WeeklyTarget = "";
     public static bool WeeklyVBlood = false;
+    public static int WeeklyLevel = 0;
 
     static readonly float ScreenWidth = Screen.width;
     static readonly float ScreenHeight = Screen.height;
@@ -203,8 +205,8 @@ internal class CanvasService
 
             if (QuestTracker)
             {
-                UpdateQuests(DailyQuestObject, DailyQuestSubHeader, DailyQuestIcon, DailyTarget, DailyProgress, DailyGoal, DailyVBlood);
-                UpdateQuests(WeeklyQuestObject, WeeklyQuestSubHeader, WeeklyQuestIcon, WeeklyTarget, WeeklyProgress, WeeklyGoal, WeeklyVBlood);
+                UpdateQuests(DailyQuestObject, DailyQuestSubHeader, DailyQuestIcon, DailyTarget, DailyProgress, DailyGoal, DailyVBlood, DailyLevel);
+                UpdateQuests(WeeklyQuestObject, WeeklyQuestSubHeader, WeeklyQuestIcon, WeeklyTarget, WeeklyProgress, WeeklyGoal, WeeklyVBlood, WeeklyLevel);
             }
 
             yield return Delay;
@@ -289,12 +291,12 @@ internal class CanvasService
             }
         }
     }
-    static void UpdateQuests(GameObject questObject, LocalizedText questSubHeader, Image questIcon, string target, int progress, int goal, bool isVBlood)
+    static void UpdateQuests(GameObject questObject, LocalizedText questSubHeader, Image questIcon, string target, int progress, int goal, bool isVBlood, int level)
     {
         if (progress != goal)
         {
             if (!questObject.gameObject.active) questObject.gameObject.active = true;
-            questSubHeader.ForceSet($"<color=white>{target}</color>: {progress}/<color=yellow>{goal}</color>");
+            questSubHeader.ForceSet($"<color=white>Lv{level} {target}</color>: {progress}/<color=yellow>{goal}</color>");
 
             if (isVBlood && questIcon.sprite.name != "BloodIcon_Cursed" && SpriteMap.TryGetValue("BloodIcon_Cursed", out Sprite vBloodSprite))
             {
