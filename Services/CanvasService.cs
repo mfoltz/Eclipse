@@ -94,6 +94,7 @@ internal class CanvasService
     public static int DailyProgress = 0;
     public static int DailyGoal = 0;
     public static string DailyTarget = "";
+    public static int DailyLevel = 0;
 
     static GameObject WeeklyQuestObject;
     static LocalizedText WeeklyQuestHeader;
@@ -101,6 +102,7 @@ internal class CanvasService
     public static int WeeklyProgress = 0;
     public static int WeeklyGoal = 0;
     public static string WeeklyTarget = "";
+    public static int WeeklyLevel = 0;
 
     static readonly float ScreenWidth = Screen.width;
     static readonly float ScreenHeight = Screen.height;
@@ -186,8 +188,8 @@ internal class CanvasService
 
             if (QuestTracker)
             {
-                UpdateQuests(DailyQuestObject, DailyQuestSubHeader, DailyTarget, DailyProgress, DailyGoal);
-                UpdateQuests(WeeklyQuestObject, WeeklyQuestSubHeader, WeeklyTarget, WeeklyProgress, WeeklyGoal);
+                UpdateQuests(DailyQuestObject, DailyQuestSubHeader, DailyTarget, DailyProgress, DailyGoal, DailyLevel);
+                UpdateQuests(WeeklyQuestObject, WeeklyQuestSubHeader, WeeklyTarget, WeeklyProgress, WeeklyGoal, WeeklyLevel);
             }
 
             yield return Delay;
@@ -272,12 +274,12 @@ internal class CanvasService
             }
         }
     }
-    static void UpdateQuests(GameObject questObject, LocalizedText questSubHeader, string target, int progress, int goal)
+    static void UpdateQuests(GameObject questObject, LocalizedText questSubHeader, string target, int progress, int goal, int level)
     {
         if (progress != goal)
         {
             if (!questObject.gameObject.active) questObject.gameObject.active = true;
-            questSubHeader.ForceSet($"<color=white>{target}</color>: {progress}/<color=yellow>{goal}</color>");
+            questSubHeader.ForceSet($"<color=white>Lv{level} {target}</color>: {progress}/<color=yellow>{goal}</color>");
         }
         else
         {
