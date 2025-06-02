@@ -2,6 +2,7 @@
 using Eclipse.Services;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
+using ProjectM;
 using ProjectM.Network;
 using ProjectM.UI;
 using Stunlock.Core;
@@ -189,6 +190,10 @@ internal static class ClientChatSystemPatch
                         {
                             CanvasService._canvasRoutine = CanvasService.CanvasUpdateLoop().Start();
                             CanvasService._active = true;
+
+                            //  __instance.World.GetExistingSystemManaged<CustomPrefabSystem>().ReadyToInitialize += (CustomPrefabSystem.CustomPrefabRegistrationMethod)Manufacture;
+                            // InputActionSystem inputActionSystem = Core.SystemService.InputActionSystem;
+                            // inputActionSystem.OnInputDeviceChange((Action)(() => OnInputChange()));
                         }
 
                         break;
@@ -211,7 +216,7 @@ internal static class ClientChatSystemPatch
             Core.Log.LogWarning($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] failed to parse event type after MAC verification - {message}");
         }
     }
-    public static bool CheckMAC(string receivedMessage, out string originalMessage)
+    static bool CheckMAC(string receivedMessage, out string originalMessage)
     {
         Match match = _regexMAC.Match(receivedMessage);
         originalMessage = string.Empty;
@@ -246,7 +251,7 @@ internal static class ClientChatSystemPatch
             Encoding.UTF8.GetBytes(recalculatedMAC),
             Encoding.UTF8.GetBytes(receivedMAC));
     }
-    public static string GenerateMACV1_3(string message)
+    static string GenerateMACV1_3(string message)
     {
         using var hmac = new HMACSHA256(Core.NEW_SHARED_KEY);
         byte[] messageBytes = Encoding.UTF8.GetBytes(message);
@@ -254,5 +259,9 @@ internal static class ClientChatSystemPatch
         byte[] hashBytes = hmac.ComputeHash(messageBytes);
 
         return Convert.ToBase64String(hashBytes);
+    }
+    static void OnInputChange()
+    {
+        Core.Log.LogWarning($"[OnInputChange]");
     }
 }

@@ -1,5 +1,8 @@
+`1.3.10`
+- more gamepad friendly (position of UI elements will change for controller versus k&m)
+
 `1.3.9`
-- preventing duplicate coroutine instances from being created if one is already present (TESTING)
+- preventing duplicate coroutine instances from being created if one is already present
 
 `1.3.8`
 - removing interact progress bar when unlocking familiars from buff entity on client

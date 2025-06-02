@@ -22,6 +22,9 @@ internal class SystemService(World world)
 
     TutorialSystem _tutorialSystem;
     public TutorialSystem TutorialSystem => _tutorialSystem ??= GetSystem<TutorialSystem>();
+
+    InputActionSystem _inputActionSystem;
+    public InputActionSystem InputActionSystem => _inputActionSystem ??= GetSystem<InputActionSystem>();
     T GetSystem<T>() where T : ComponentSystemBase
     {
         return _world.GetExistingSystemManaged<T>() ?? throw new InvalidOperationException($"Failed to get {Il2CppType.Of<T>().FullName} from the Server...");
