@@ -537,6 +537,30 @@ internal class CanvasService
             }
         }
     }
+
+    /*
+    static readonly Dictionary<UIElement, (Vector2 mouseAndKeyboard, Vector2 controllerPosition)> _elementPositions = [];
+    public static void HandleInputDeviceChange(bool useController)
+    {
+        // For each UIElement that is Daily or Weekly, set its RectTransform
+        foreach (var kvp in _questWindowPositionMap)
+        {
+            UIElement elementType = kvp.Key;
+            (Vector2 keyboardPos, Vector2 controllerPos) = kvp.Value;
+
+            // We expect _gameObjects[elementType] to be the quest GameObject
+            if (_gameObjects.TryGetValue(elementType, out GameObject questGo))
+            {
+                RectTransform rt = questGo.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    Vector2 target = useController ? controllerPos : keyboardPos;
+                    rt.anchoredPosition = target;
+                }
+            }
+        }
+    }
+    */
     static void ToggleGameObject(GameObject gameObject)
     {
         bool active = !gameObject.activeSelf;
@@ -2148,29 +2172,6 @@ internal class CanvasService
 
         return name;
     }
-
-    /*
-    static string TrimToFirstWord(string name)
-    {
-        int firstSpaceIndex = name.IndexOf(' ');
-        return firstSpaceIndex > 0 ? name[..firstSpaceIndex] : name;
-    }
-
-    static string TrimToFirstWord(string name)
-    {
-        int firstSpaceIndex = name.IndexOf(' ');
-        if (firstSpaceIndex == -1) return name;
-
-        int secondSpaceIndex = name.IndexOf(' ', firstSpaceIndex + 1);
-        if (secondSpaceIndex == -1) return name;
-
-        int thirdSpaceIndex = name.IndexOf(' ', secondSpaceIndex + 1);
-        if (thirdSpaceIndex != -1) return name;
-
-        return name[..firstSpaceIndex];
-    }
-    */
-
     public static void ResetState()
     {
         foreach (GameObject gameObject in CanvasService._objectStates.Keys)
