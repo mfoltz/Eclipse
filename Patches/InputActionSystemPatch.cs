@@ -1,5 +1,4 @@
-﻿using Eclipse.Services;
-using HarmonyLib;
+﻿using HarmonyLib;
 using ProjectM;
 using UnityEngine.InputSystem;
 
@@ -12,15 +11,15 @@ internal static class InputActionSystemPatch
     [HarmonyPostfix]
     static void OnInputDeviceChangePostfix(InputActionSystem __instance, InputDevice device, InputDeviceChange change)
     {
-        Core.Log.LogWarning($"Input device changed: {device.name}, Change type: {change}");
+        // Core.Log.LogWarning($"Input device changed: {device.name}, Change type: {change}");
 
         if (__instance.ControllerType != ControllerType.KeyboardAndMouse)
         {
-            CanvasService.HandleInputDeviceChange(true);
+            // CanvasService.HandleAdaptiveElement(true);
         }
         else
         {
-            CanvasService.HandleInputDeviceChange(false);
+            // CanvasService.HandleAdaptiveElement(false);
         }
     }
 }
