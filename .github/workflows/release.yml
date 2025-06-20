@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release_on_thunderstore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+          dotnet-quality: 'preview'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Latest Tag
+        id: extract_tag
+        run: |
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set Release Tag
+        run: echo "RELEASE_TAG=${{ env.latest_tag }}" >> $GITHUB_ENV
+
+      - name: Download Release
+        run: |
+          gh release download ${{ env.RELEASE_TAG }} -D ./dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Thunderstore CLI (tcli)
+        run: dotnet tool install --global tcli
+
+      - name: Publish build to Thunderstore
+        run: |
+          trimmed_tag=${RELEASE_TAG:1}
+          tcli publish --token ${{ secrets.THUNDERSTORE_KEY }} --package-version $trimmed_tag
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
