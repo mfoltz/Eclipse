@@ -73,17 +73,6 @@ internal static class ClientChatSystemPatch
 
             try
             {
-                /*
-                if(_versions.TryDequeue(out string modVersion))
-                {
-                    string stringId = _localUser.GetUser().PlatformId.ToString();
-                    string message = $"{modVersion};{stringId}";
-
-                    SendMessageDelayRoutine(message, modVersion).Start();
-                    ResetPendingDelayRoutine().Start();
-                }
-                */
-
                 string stringId = LocalUser.GetUser().PlatformId.ToString();
                 string message = $"{VERSION};{stringId}";
 

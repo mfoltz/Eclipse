@@ -507,4 +507,13 @@ internal static class Extensions
 
         return reversed;
     }
+    public static bool Equals<T>(this T value, params T[] options)
+    {
+        foreach (var option in options)
+        {
+            if (value.Equals(option)) return true;
+        }
+
+        return false;
+    }
 }

@@ -299,3 +299,10 @@ dist/
 /TODO.txt
 *.env
 secrets.json
+DevCommands.cs
+SystemTesting.cs
+TestPatches.cs
+Debugging.cs
+Notepad.cs
+VSystem.cs
+Bridges.cs

@@ -11,7 +11,7 @@ v-rising = ["oakveil-update", "mods", "client"]
 [package]
 namespace = "zfolmt"
 name = "Eclipse"
-versionNumber = "1.3.9"
+versionNumber = "1.3.10"
 description = "Client UI for Bloodcraft!"
 websiteUrl = "https://github.com/mfoltz/Eclipse"
 containsNsfwContent = false

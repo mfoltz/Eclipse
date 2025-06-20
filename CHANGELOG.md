@@ -1,5 +1,6 @@
 `1.3.10`
-- more gamepad friendly (position of UI elements will change for controller versus k&m)
+- gamepad mode (position of quest windows and profession bars will change based on detected input)
+- ability slot click-toggle for profession bars functional again
 
 `1.3.9`
 - preventing duplicate coroutine instances from being created if one is already present
