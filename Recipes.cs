@@ -1,6 +1,7 @@
 ﻿using Eclipse.Services;
 using ProjectM;
 using ProjectM.Shared;
+using ProjectM.UI;
 using Stunlock.Core;
 using Stunlock.Localization;
 using System.Security.Cryptography;

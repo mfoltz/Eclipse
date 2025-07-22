@@ -1,3 +1,6 @@
+`1.3.11`
+- minor change so Eclipse can tell if LimitBreak is active (client entity needs to be modified for attribute caps to be correct in UI)
+
 `1.3.10`
 - gamepad mode (position of quest windows and profession bars will change based on detected input)
 - ability slot click-toggle for profession bars functional again

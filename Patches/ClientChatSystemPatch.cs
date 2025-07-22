@@ -58,8 +58,6 @@ internal static class ClientChatSystemPatch
         ConfigsToClient
     }
 
-    static readonly PrefabGUID _familiarUnlockBuff = PrefabGUIDs.AB_HighLordSword_SelfStun_DeadBuff;
-
     [HarmonyBefore("gg.deca.Bloodstone")]
     [HarmonyPatch(typeof(ClientChatSystem), nameof(ClientChatSystem.OnUpdate))]
     [HarmonyPrefix]
@@ -77,6 +75,8 @@ internal static class ClientChatSystemPatch
                 string message = $"{VERSION};{stringId}";
 
                 SendMessageDelayRoutine(message, VERSION).Start();
+                // testing
+                // Core.ScaleAndReplaceCaps(LocalCharacter, 2f);
             }
             catch (Exception ex)
             {
@@ -107,18 +107,6 @@ internal static class ClientChatSystemPatch
         {
             entities.Dispose();
         }
-
-        try
-        {
-            if (LocalCharacter.HasBuff(_familiarUnlockBuff) && LocalCharacter.TryGetBuff(_familiarUnlockBuff, out Entity buffEntity))
-            {
-                buffEntity.Remove<UseCharacterHudProgressBar>();
-            }
-        }
-        catch (Exception ex)
-        {
-            Core.Log.LogWarning($"Failed to check for familiar unlock buff! Error - {ex}");
-        }
     }
     static IEnumerator SendMessageDelayRoutine(string message, string modVersion)
     {
@@ -135,7 +123,6 @@ internal static class ClientChatSystemPatch
 
         messageWithMAC = modVersion switch
         {
-            // V1_2_2 => $"{intermediateMessage};mac{GenerateMACV1_2_2(intermediateMessage)}",
             _ when modVersion.StartsWith(V1_3) => $"{intermediateMessage};mac{GenerateMACV1_3(intermediateMessage)}",
             _ => string.Empty
         };
@@ -154,7 +141,7 @@ internal static class ClientChatSystemPatch
         networkEntity.Write(_networkEventType);
         networkEntity.Write(chatMessageEvent);
 
-        Core.Log.LogInfo($"Registration payload sent to server ({DateTime.Now}) - {messageWithMAC}");
+        // Core.Log.LogInfo($"Registration payload sent to server ({DateTime.Now}) - {messageWithMAC}");
     }
     static void HandleServerMessage(string message)
     {
@@ -168,8 +155,6 @@ internal static class ClientChatSystemPatch
                         List<string> playerData = DataService.ParseMessageString(_regexExtract.Replace(message, ""));
                         DataService.ParsePlayerData(playerData);
 
-                        // Core.Log.LogWarning($"Player data - {string.Join(", ", playerData)}");
-
                         if (CanvasService._killSwitch)
                         {
                             CanvasService._killSwitch = false;
@@ -179,10 +164,6 @@ internal static class ClientChatSystemPatch
                         {
                             CanvasService._canvasRoutine = CanvasService.CanvasUpdateLoop().Start();
                             CanvasService._active = true;
-
-                            //  __instance.World.GetExistingSystemManaged<CustomPrefabSystem>().ReadyToInitialize += (CustomPrefabSystem.CustomPrefabRegistrationMethod)Manufacture;
-                            // InputActionSystem inputActionSystem = Core.SystemService.InputActionSystem;
-                            // inputActionSystem.OnInputDeviceChange((Action)(() => OnInputChange()));
                         }
 
                         break;

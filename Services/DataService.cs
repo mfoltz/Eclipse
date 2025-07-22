@@ -6,6 +6,12 @@ using static Eclipse.Services.CanvasService;
 namespace Eclipse.Services;
 internal static class DataService
 {
+    [Flags]
+    public enum ReservedFlags : int
+    {
+        None = 0,
+        // ExampleFlag = 1 << 0,                             
+    }
     public enum TargetType
     {
         Kill,
@@ -74,14 +80,14 @@ internal static class DataService
     public enum WeaponStatType
     {
         None,
-        MaxHealth,
-        MovementSpeed,
+        BonusMaxHealth,
+        BonusMovementSpeed,
         PrimaryAttackSpeed,
         PhysicalLifeLeech,
         SpellLifeLeech,
         PrimaryLifeLeech,
-        PhysicalPower,
-        SpellPower,
+        BonusPhysicalPower,
+        BonusSpellPower,
         PhysicalCriticalStrikeChance,
         PhysicalCriticalStrikeDamage,
         SpellCriticalStrikeChance,
@@ -90,14 +96,14 @@ internal static class DataService
 
     public static readonly Dictionary<WeaponStatType, string> WeaponStatTypeAbbreviations = new()
     {
-        { WeaponStatType.MaxHealth, "HP" },
-        { WeaponStatType.MovementSpeed, "MS" },
+        { WeaponStatType.BonusMaxHealth, "HP" },
+        { WeaponStatType.BonusMovementSpeed, "MS" },
         { WeaponStatType.PrimaryAttackSpeed, "PAS" },
         { WeaponStatType.PhysicalLifeLeech, "PLL" },
         { WeaponStatType.SpellLifeLeech, "SLL" },
         { WeaponStatType.PrimaryLifeLeech, "PAL" },
-        { WeaponStatType.PhysicalPower, "PP" },
-        { WeaponStatType.SpellPower, "SP" },
+        { WeaponStatType.BonusPhysicalPower, "PP" },
+        { WeaponStatType.BonusSpellPower, "SP" },
         { WeaponStatType.PhysicalCriticalStrikeChance, "PCC" },
         { WeaponStatType.PhysicalCriticalStrikeDamage, "PCD" },
         { WeaponStatType.SpellCriticalStrikeChance, "SCC" },
@@ -122,14 +128,14 @@ internal static class DataService
 
     public static readonly Dictionary<WeaponStatType, string> WeaponStatFormats = new()
     {
-        { WeaponStatType.MaxHealth, "integer" },
-        { WeaponStatType.MovementSpeed, "decimal" },
+        { WeaponStatType.BonusMaxHealth, "integer" },
+        { WeaponStatType.BonusMovementSpeed, "decimal" },
         { WeaponStatType.PrimaryAttackSpeed, "percentage" },
         { WeaponStatType.PhysicalLifeLeech, "percentage" },
         { WeaponStatType.SpellLifeLeech, "percentage" },
         { WeaponStatType.PrimaryLifeLeech, "percentage" },
-        { WeaponStatType.PhysicalPower, "integer" },
-        { WeaponStatType.SpellPower, "integer" },
+        { WeaponStatType.BonusPhysicalPower, "integer" },
+        { WeaponStatType.BonusSpellPower, "integer" },
         { WeaponStatType.PhysicalCriticalStrikeChance, "percentage" },
         { WeaponStatType.PhysicalCriticalStrikeDamage, "percentage" },
         { WeaponStatType.SpellCriticalStrikeChance, "percentage" },
@@ -137,7 +143,7 @@ internal static class DataService
     };
 
     public static Dictionary<BloodStatType, float> _bloodStatValues = [];
-    public enum BloodStatType
+    public enum BloodStatType 
     {
         None,
         HealingReceived, 
@@ -224,6 +230,7 @@ internal static class DataService
 
     public static float _prestigeStatMultiplier;
     public static float _classStatMultiplier;
+    public static ReservedFlags _reservedFlags;
     public static bool _extraRecipes;
     public static PrefabGUID _primalCost;
     public class ProfessionData(string enchantingProgress, string enchantingLevel, string alchemyProgress, string alchemyLevel,
@@ -263,7 +270,7 @@ internal static class DataService
     public class ExpertiseData(string percent, string level, string prestige, string expertiseType, string bonusStats) : ExperienceData(percent, level, prestige, expertiseType)
     {
         public string ExpertiseType { get; set; } = ((WeaponType)int.Parse(expertiseType)).ToString();
-        public List<string> BonusStats { get; set; } = [.. Enumerable.Range(0, bonusStats.Length / 2).Select(i => ((WeaponStatType)int.Parse(bonusStats.Substring(i * 2, 2), CultureInfo.InvariantCulture)).ToString())];
+        public List<string> BonusStats { get; set; } = [..Enumerable.Range(0, bonusStats.Length / 2).Select(i => ((WeaponStatType)int.Parse(bonusStats.Substring(i * 2, 2), CultureInfo.InvariantCulture)).ToString())];
     }
     public class QuestData(string type, string progress, string goal, string target, string isVBlood)
     {
@@ -299,7 +306,7 @@ internal static class DataService
 
         public int MaxFamiliarLevel;
 
-        public int MaxProfessionLevel;
+        public ReservedFlags ReservedFlags;
 
         public bool ExtraRecipes;
 
@@ -310,7 +317,10 @@ internal static class DataService
         public Dictionary<BloodStatType, float> BloodStatValues;
 
         public Dictionary<PlayerClass, (List<WeaponStatType> WeaponStats, List<BloodStatType> bloodStats)> ClassStatSynergies;
-        public ConfigDataV1_3(string prestigeMultiplier, string statSynergyMultiplier, string maxPlayerLevel, string maxLegacyLevel, string maxExpertiseLevel, string maxFamiliarLevel, string maxProfessionLevel, string extraRecipes, string primalCost, string weaponStatValues, string bloodStatValues, string classStatSynergies)
+        public ConfigDataV1_3(string prestigeMultiplier, string statSynergyMultiplier, string maxPlayerLevel, 
+            string maxLegacyLevel, string maxExpertiseLevel, string maxFamiliarLevel, 
+            string reservedFlags, string extraRecipes, string primalCost, 
+            string weaponStatValues, string bloodStatValues, string classStatSynergies)
         {
             PrestigeStatMultiplier = float.Parse(prestigeMultiplier, CultureInfo.InvariantCulture);
             ClassStatMultiplier = float.Parse(statSynergyMultiplier, CultureInfo.InvariantCulture);
@@ -319,7 +329,8 @@ internal static class DataService
             MaxLegacyLevel = int.Parse(maxLegacyLevel, CultureInfo.InvariantCulture);
             MaxExpertiseLevel = int.Parse(maxExpertiseLevel, CultureInfo.InvariantCulture);
             MaxFamiliarLevel = int.Parse(maxFamiliarLevel, CultureInfo.InvariantCulture);
-            MaxProfessionLevel = int.Parse(maxProfessionLevel, CultureInfo.InvariantCulture);
+            // MaxProfessionLevel = int.Parse(maxProfessionLevel, CultureInfo.InvariantCulture);
+            ReservedFlags = (ReservedFlags)int.Parse(reservedFlags, CultureInfo.InvariantCulture);
 
             ExtraRecipes = bool.Parse(extraRecipes);
             PrimalCost = int.Parse(primalCost, CultureInfo.InvariantCulture);
@@ -371,7 +382,7 @@ internal static class DataService
                 configData[index++], // maxLegacyLevel
                 configData[index++], // maxExpertiseLevel
                 configData[index++], // maxFamiliarLevel
-                configData[index++], // maxProfessionLevel no longer used and merits getting cut but that necessitates enough other changes leaving alone for the moment
+                configData[index++], // reservedFlags, nice to have for later without breaking compatibility
                 configData[index++], // extraRecipes
                 configData[index++], // primalCost
                 string.Join(",", configData.Skip(index).Take(12)), // Combine the next 11 elements for weaponStatValues
@@ -386,8 +397,12 @@ internal static class DataService
             _legacyMaxLevel = parsedConfigData.MaxLegacyLevel;
             _expertiseMaxLevel = parsedConfigData.MaxExpertiseLevel;
             _familiarMaxLevel = parsedConfigData.MaxFamiliarLevel;
+
+            _reservedFlags = parsedConfigData.ReservedFlags;
+            // Core.Log.LogWarning($"Flags: {_reservedFlags}");
+
             _extraRecipes = parsedConfigData.ExtraRecipes;
-            _primalCost = new PrefabGUID(parsedConfigData.PrimalCost);
+            _primalCost = new(parsedConfigData.PrimalCost);
 
             _weaponStatValues = parsedConfigData.WeaponStatValues;
             _bloodStatValues = parsedConfigData.BloodStatValues;

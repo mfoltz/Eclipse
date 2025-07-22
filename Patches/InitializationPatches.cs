@@ -45,47 +45,29 @@ internal static class InitializationPatches
             Core.SetCanvas(canvas);
         }
     }
+    public static bool AttributesInitialized => _attributesInitialized;
+    static bool _attributesInitialized = false;
 
-    /*
-    [HarmonyPatch(typeof(CommonClientDataSystem), nameof(CommonClientDataSystem.OnUpdate))]
+    static InventorySubMenu _inventorySubMenu;
+
+    [HarmonyPatch(typeof(InventorySubMenuMapper), nameof(InventorySubMenuMapper.InitializeUI))]
     [HarmonyPostfix]
-    static void OnUpdatePostfix(CommonClientDataSystem __instance)
+    static void InitializeUIPostfix(InventorySubMenu menu)
     {
-        if (!Core._initialized) return;
+        Core.Log.LogWarning($"[InventorySubMenuMapper.InitializeUI]");
 
-        NativeArray<Entity> entities = __instance.EntityQueries[0].ToEntityArray(Allocator.Temp);
-
-        try
+        if (_inventorySubMenu == null)
         {
-            foreach (Entity entity in entities)
-            {
-                if (entity.Has<LocalUser>()) ClientChatSystemPatch._localUser = entity;
-                break;
-            }
-        }
-        finally
-        {
-            entities.Dispose();
-        }
-
-        entities = __instance.EntityQueries[1].ToEntityArray(Allocator.Temp);
-
-        try
-        {
-            foreach (Entity entity in entities)
-            {
-                if (entity.Has<LocalCharacter>()) ClientChatSystemPatch._localCharacter = entity;
-                CanvasService._localCharacter = entity;
-
-                break;
-            }
-        }
-        finally
-        {
-            entities.Dispose();
+            _inventorySubMenu = menu;
         }
     }
-    */
+    public static void TryInitializeAttributeValues()
+    {
+        if (!_attributesInitialized && _inventorySubMenu != null)
+        {
+            _attributesInitialized = CanvasService.InitializeAttributeValues(_inventorySubMenu);
+        }
+    }
 
     [HarmonyPatch(typeof(ClientBootstrapSystem), nameof(ClientBootstrapSystem.OnDestroy))]
     [HarmonyPrefix]
