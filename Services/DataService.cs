@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using Eclipse.DTOs;
 using UnityEngine;
+using Eclipse.Utilities.Extensions;
 using static Eclipse.Services.CanvasService;
 
 namespace Eclipse.Services;

@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using Eclipse.Utilities.Extensions;
 using CryptographicOperations = System.Security.Cryptography.CryptographicOperations;
 using HMACSHA256 = System.Security.Cryptography.HMACSHA256;
 

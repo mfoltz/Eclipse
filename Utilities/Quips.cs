@@ -3,6 +3,7 @@ using ProjectM;
 using ProjectM.Network;
 using Unity.Collections;
 using Unity.Entities;
+using Eclipse.Utilities.Extensions;
 
 namespace Eclipse.Utilities;
 internal static class Quips

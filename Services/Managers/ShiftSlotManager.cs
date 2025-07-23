@@ -1,6 +1,7 @@
 using System.Collections;
 using ProjectM;
 using Eclipse;
+using Eclipse.Utilities.Extensions;
 using Unity.Entities;
 
 namespace Eclipse.Services.Managers;
