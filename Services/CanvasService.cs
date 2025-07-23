@@ -36,6 +36,14 @@ internal class CanvasService
     static readonly bool _professionBars = Plugin.Professions;
     static readonly bool _questTracker = Plugin.Quests;
     static readonly bool _shiftSlot = Plugin.ShiftSlot;
+
+    public static bool ExperienceEnabled => _experienceBar;
+    public static bool LegacyEnabled => _legacyBar;
+    public static bool ExpertiseEnabled => _expertiseBar;
+    public static bool FamiliarEnabled => _familiarBar;
+    public static bool ProfessionsEnabled => _professionBars;
+    public static bool QuestsEnabled => _questTracker;
+    public static bool ShiftSlotEnabled => _shiftSlot;
     public enum Element
     {
         Experience,
@@ -145,6 +153,7 @@ internal class CanvasService
 
     // static readonly WaitForSeconds _delay = new(1f);
     static readonly WaitForSeconds _delay = new(0.25f);
+    public static WaitForSeconds Delay => _delay;
     static readonly WaitForSeconds _shiftDelay = new(0.1f);
 
     static UICanvasBase _canvasBase;
@@ -388,6 +397,9 @@ internal class CanvasService
     static readonly PrefabGUID _statsBuff = PrefabGUIDs.SetBonus_AllLeech_T09;
     static readonly bool _statsBuffActive = _legacyBar || _expertiseBar;
 
+    static readonly List<IReactiveElement> _managers = [];
+    static readonly List<Coroutine> _managerCoroutines = [];
+
     static readonly Dictionary<UnitStatType, float> _lastSeen = [];
     static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _weaponStats = [];
     static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _bloodStats = [];
@@ -422,6 +434,23 @@ internal class CanvasService
         {
             InitializeUI();
             InitializeAbilitySlotButtons();
+
+            _managers.AddRange(new IReactiveElement[]
+            {
+                new Managers.ExperienceManager(),
+                new Managers.LegacyManager(),
+                new Managers.ExpertiseManager(),
+                new Managers.FamiliarManager(),
+                new Managers.ProfessionManager(),
+                new Managers.QuestManager(),
+                new Managers.ShiftSlotManager()
+            });
+
+            foreach (var manager in _managers)
+            {
+                manager.Awake();
+                _managerCoroutines.Add(Core.StartCoroutine(manager.OnUpdate()));
+            }
         }
         catch (Exception ex)
         {
@@ -729,44 +758,15 @@ internal class CanvasService
                 continue;
             }
 
-            if (_experienceBar)
+            try
             {
-                try
-                {
-                    UpdateBar(_experienceProgress, _experienceLevel, _experienceMaxLevel, _experiencePrestige, _experienceText, _experienceHeader, _experienceFill, Element.Experience);
-                    UpdateClass(_classType, _experienceClassText);
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating experience bar: {e}");
-                }
+                UpdateExperience();
+                UpdateLegacy();
+                UpdateExpertise();
             }
-
-            if (_legacyBar)
+            catch (Exception e)
             {
-                try
-                {
-                    UpdateBar(_legacyProgress, _legacyLevel, _legacyMaxLevel, _legacyPrestige, _legacyText, _legacyHeader, _legacyFill, Element.Legacy, _legacyType);
-                    UpdateBloodStats(_legacyBonusStats, [_firstLegacyStat, _secondLegacyStat, _thirdLegacyStat], GetBloodStatInfo);
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating legacy bar: {e}");
-                }
-            }
-
-            if (_expertiseBar)
-            {
-                try
-                {
-                    UpdateBar(_expertiseProgress, _expertiseLevel, _expertiseMaxLevel, _expertisePrestige, _expertiseText, _expertiseHeader, _expertiseFill, Element.Expertise, _expertiseType);
-                    UpdateWeaponStats(_expertiseBonusStats, [_firstExpertiseStat, _secondExpertiseStat, _thirdExpertiseStat], GetWeaponStatInfo);
-                    GetAndUpdateWeaponStatBuffer(LocalCharacter);
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating expertise bar: {e}");
-                }
+                Core.Log.LogError($"Error updating bars: {e}");
             }
 
             if (_statsBuffActive)
@@ -784,57 +784,15 @@ internal class CanvasService
                 }
             }
 
-            if (_familiarBar)
+            try
             {
-                try
-                {
-                    UpdateBar(_familiarProgress, _familiarLevel, _familiarMaxLevel, _familiarPrestige, _familiarText, _familiarHeader, _familiarFill, Element.Familiars, _familiarName);
-                    UpdateFamiliarStats(_familiarStats, [_familiarMaxHealth, _familiarPhysicalPower, _familiarSpellPower]);
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating familiar bar: {e}");
-                }
+                UpdateFamiliar();
+                UpdateQuests();
+                UpdateProfessions();
             }
-
-            if (_questTracker)
+            catch (Exception e)
             {
-                try
-                {
-                    UpdateQuests(_dailyQuestObject, _dailyQuestSubHeader, _dailyQuestIcon, _dailyTargetType, _dailyTarget, _dailyProgress, _dailyGoal, _dailyVBlood);
-                    UpdateQuests(_weeklyQuestObject, _weeklyQuestSubHeader, _weeklyQuestIcon, _weeklyTargetType, _weeklyTarget, _weeklyProgress, _weeklyGoal, _weeklyVBlood);
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating quest tracker: {e}");
-                }
-            }
-
-            if (_professionBars)
-            {
-                try
-                {
-                    UpdateProfessions(_alchemyProgress, _alchemyLevel, _alchemyLevelText, _alchemyProgressFill, _alchemyFill, Profession.Alchemy);
-                    UpdateProfessions(_blacksmithingProgress, _blacksmithingLevel, _blacksmithingLevelText, _blacksmithingProgressFill, _blacksmithingFill, Profession.Blacksmithing);
-                    UpdateProfessions(_enchantingProgress, _enchantingLevel, _enchantingLevelText, _enchantingProgressFill, _enchantingFill, Profession.Enchanting);
-                    UpdateProfessions(_tailoringProgress, _tailoringLevel, _tailoringLevelText, _tailoringProgressFill, _tailoringFill, Profession.Tailoring);
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating professions(1): {e}");
-                }
-
-                try
-                {
-                    UpdateProfessions(_fishingProgress, _fishingLevel, _fishingLevelText, _fishingProgressFill, _fishingFill, Profession.Fishing);
-                    UpdateProfessions(_harvestingProgress, _harvestingLevel, _harvestingLevelText, _harvestingProgressFill, _harvestingFill, Profession.Harvesting);
-                    UpdateProfessions(_miningProgress, _miningLevel, _miningLevelText, _miningProgressFill, _miningFill, Profession.Mining);
-                    UpdateProfessions(_woodcuttingProgress, _woodcuttingLevel, _woodcuttingLevelText, _woodcuttingProgressFill, _woodcuttingFill, Profession.Woodcutting);
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating professions(2): {e}");
-                }
+                Core.Log.LogError($"Error updating UI elements: {e}");
             }
 
             if (_killSwitch) yield break;
@@ -2126,8 +2084,107 @@ internal class CanvasService
 
         return name;
     }
+
+    // Public update helpers used by reactive managers
+    public static void UpdateExperience()
+    {
+        if (!_experienceBar) return;
+
+        UpdateBar(_experienceProgress, _experienceLevel, _experienceMaxLevel, _experiencePrestige,
+            _experienceText, _experienceHeader, _experienceFill, Element.Experience);
+        UpdateClass(_classType, _experienceClassText);
+    }
+
+    public static void UpdateLegacy()
+    {
+        if (!_legacyBar) return;
+
+        UpdateBar(_legacyProgress, _legacyLevel, _legacyMaxLevel, _legacyPrestige,
+            _legacyText, _legacyHeader, _legacyFill, Element.Legacy, _legacyType);
+        UpdateBloodStats(_legacyBonusStats, [_firstLegacyStat, _secondLegacyStat, _thirdLegacyStat], GetBloodStatInfo);
+    }
+
+    public static void UpdateExpertise()
+    {
+        if (!_expertiseBar) return;
+
+        UpdateBar(_expertiseProgress, _expertiseLevel, _expertiseMaxLevel, _expertisePrestige,
+            _expertiseText, _expertiseHeader, _expertiseFill, Element.Expertise, _expertiseType);
+        UpdateWeaponStats(_expertiseBonusStats, [_firstExpertiseStat, _secondExpertiseStat, _thirdExpertiseStat], GetWeaponStatInfo);
+        GetAndUpdateWeaponStatBuffer(LocalCharacter);
+    }
+
+    public static void UpdateFamiliar()
+    {
+        if (!_familiarBar) return;
+
+        UpdateBar(_familiarProgress, _familiarLevel, _familiarMaxLevel, _familiarPrestige,
+            _familiarText, _familiarHeader, _familiarFill, Element.Familiars, _familiarName);
+        UpdateFamiliarStats(_familiarStats, [_familiarMaxHealth, _familiarPhysicalPower, _familiarSpellPower]);
+    }
+
+    public static void UpdateProfessions()
+    {
+        if (!_professionBars) return;
+
+        UpdateProfessions(_alchemyProgress, _alchemyLevel, _alchemyLevelText, _alchemyProgressFill, _alchemyFill, Profession.Alchemy);
+        UpdateProfessions(_blacksmithingProgress, _blacksmithingLevel, _blacksmithingLevelText, _blacksmithingProgressFill, _blacksmithingFill, Profession.Blacksmithing);
+        UpdateProfessions(_enchantingProgress, _enchantingLevel, _enchantingLevelText, _enchantingProgressFill, _enchantingFill, Profession.Enchanting);
+        UpdateProfessions(_tailoringProgress, _tailoringLevel, _tailoringLevelText, _tailoringProgressFill, _tailoringFill, Profession.Tailoring);
+        UpdateProfessions(_fishingProgress, _fishingLevel, _fishingLevelText, _fishingProgressFill, _fishingFill, Profession.Fishing);
+        UpdateProfessions(_harvestingProgress, _harvestingLevel, _harvestingLevelText, _harvestingProgressFill, _harvestingFill, Profession.Harvesting);
+        UpdateProfessions(_miningProgress, _miningLevel, _miningLevelText, _miningProgressFill, _miningFill, Profession.Mining);
+        UpdateProfessions(_woodcuttingProgress, _woodcuttingLevel, _woodcuttingLevelText, _woodcuttingProgressFill, _woodcuttingFill, Profession.Woodcutting);
+    }
+
+    public static void UpdateQuests()
+    {
+        if (!_questTracker) return;
+
+        UpdateQuests(_dailyQuestObject, _dailyQuestSubHeader, _dailyQuestIcon, _dailyTargetType, _dailyTarget, _dailyProgress, _dailyGoal, _dailyVBlood);
+        UpdateQuests(_weeklyQuestObject, _weeklyQuestSubHeader, _weeklyQuestIcon, _weeklyTargetType, _weeklyTarget, _weeklyProgress, _weeklyGoal, _weeklyVBlood);
+    }
+
+    public static void UpdateShiftSlot()
+    {
+        if (_killSwitch || !_shiftActive) return;
+
+        if (LocalCharacter.TryGetComponent(out AbilityBar_Shared abilityBar_Shared))
+        {
+            Entity abilityGroupEntity = abilityBar_Shared.CastGroup.GetEntityOnServer();
+            Entity abilityCastEntity = abilityBar_Shared.CastAbility.GetEntityOnServer();
+
+            if (abilityGroupEntity.TryGetComponent(out AbilityGroupState abilityGroupState) && abilityGroupState.SlotIndex == 3)
+            {
+                PrefabGUID currentPrefabGUID = abilityGroupEntity.GetPrefabGUID();
+                if (TryUpdateTooltipData(abilityGroupEntity, currentPrefabGUID))
+                {
+                    UpdateAbilityData(_abilityTooltipData, abilityGroupEntity, abilityCastEntity, currentPrefabGUID);
+                }
+                else if (_abilityTooltipData != null)
+                {
+                    UpdateAbilityData(_abilityTooltipData, abilityGroupEntity, abilityCastEntity, currentPrefabGUID);
+                }
+            }
+
+            if (_abilityTooltipData != null)
+            {
+                UpdateAbilityState(abilityGroupEntity, abilityCastEntity);
+            }
+        }
+    }
     public static void ResetState()
     {
+        foreach (var coroutine in _managerCoroutines)
+        {
+            if (coroutine != null)
+            {
+                Core.StopCoroutine(coroutine);
+            }
+        }
+        _managerCoroutines.Clear();
+        _managers.Clear();
+
         foreach (GameObject gameObject in _elementStates.Keys)
         {
             if (gameObject != null)
