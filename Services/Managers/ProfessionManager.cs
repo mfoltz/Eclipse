@@ -6,6 +6,7 @@ internal class ProfessionManager : IReactiveElement
 {
     public void Awake()
     {
+        CanvasService.InitializeProfessions();
     }
 
     public IEnumerator OnUpdate()

@@ -6,6 +6,7 @@ internal class ExpertiseManager : IReactiveElement
 {
     public void Awake()
     {
+        CanvasService.InitializeExpertiseBar();
     }
 
     public IEnumerator OnUpdate()

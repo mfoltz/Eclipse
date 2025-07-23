@@ -6,7 +6,7 @@ internal class ExperienceManager : IReactiveElement
 {
     public void Awake()
     {
-        // Initialization logic can be expanded
+        CanvasService.InitializeExperienceBar();
     }
 
     public IEnumerator OnUpdate()
