@@ -6,6 +6,7 @@ internal class FamiliarManager : IReactiveElement
 {
     public void Awake()
     {
+        CanvasService.InitializeFamiliarBar();
     }
 
     public IEnumerator OnUpdate()

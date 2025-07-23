@@ -391,7 +391,6 @@ internal class CanvasService
     public static bool _shiftActive = false;
     public static bool _killSwitch = false;
 
-    public static Coroutine _canvasRoutine;
     public static Coroutine _shiftRoutine;
 
     static readonly PrefabGUID _statsBuff = PrefabGUIDs.SetBonus_AllLeech_T09;
@@ -432,9 +431,6 @@ internal class CanvasService
 
         try
         {
-            InitializeUI();
-            InitializeAbilitySlotButtons();
-
             _managers.AddRange(new IReactiveElement[]
             {
                 new Managers.ExperienceManager(),
@@ -451,6 +447,9 @@ internal class CanvasService
                 manager.Awake();
                 _managerCoroutines.Add(Core.StartCoroutine(manager.OnUpdate()));
             }
+
+            InitializeAbilitySlotButtons();
+            _ready = true;
         }
         catch (Exception ex)
         {
@@ -626,7 +625,6 @@ internal class CanvasService
                 ref _abilityEmptyIcon, ref _abilityIcon, ref _keybindObject);
         }
 
-        _ready = true;
     }
     static void InitializeAbilitySlotButtons()
     {
@@ -744,85 +742,78 @@ internal class CanvasService
 
         // Tutorial();
     }
-    public static IEnumerator CanvasUpdateLoop()
+
+    internal static void InitializeExperienceBar()
     {
-        while (true)
+        if (_experienceBar)
         {
-            if (_killSwitch)
-            {
-                yield break;
-            }
-            else if (!_ready || !_active)
-            {
-                yield return _delay;
-                continue;
-            }
+            ConfigureHorizontalProgressBar(ref _experienceBarGameObject, ref _experienceInformationPanel,
+                ref _experienceFill, ref _experienceText, ref _experienceHeader, Element.Experience, Color.green,
+                ref _experienceFirstText, ref _experienceClassText, ref _experienceSecondText);
+        }
+    }
 
-            try
-            {
-                UpdateExperience();
-                UpdateLegacy();
-                UpdateExpertise();
-            }
-            catch (Exception e)
-            {
-                Core.Log.LogError($"Error updating bars: {e}");
-            }
+    internal static void InitializeLegacyBar()
+    {
+        if (_legacyBar)
+        {
+            ConfigureHorizontalProgressBar(ref _legacyBarGameObject, ref _legacyInformationPanel,
+                ref _legacyFill, ref _legacyText, ref _legacyHeader, Element.Legacy, Color.red,
+                ref _firstLegacyStat, ref _secondLegacyStat, ref _thirdLegacyStat);
+        }
+    }
 
-            if (_statsBuffActive)
-            {
-                try
-                {
-                    if (LocalCharacter.TryGetBuff(_statsBuff, out Entity buffEntity))
-                    {
-                        UpdateBuffStatBuffer(buffEntity);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Core.Log.LogError($"Error updating stats buff: {e}");
-                }
-            }
+    internal static void InitializeExpertiseBar()
+    {
+        if (_expertiseBar)
+        {
+            ConfigureHorizontalProgressBar(ref _expertiseBarGameObject, ref _expertiseInformationPanel,
+                ref _expertiseFill, ref _expertiseText, ref _expertiseHeader, Element.Expertise, Color.grey,
+                ref _firstExpertiseStat, ref _secondExpertiseStat, ref _thirdExpertiseStat);
+        }
+    }
 
-            try
-            {
-                UpdateFamiliar();
-                UpdateQuests();
-                UpdateProfessions();
-            }
-            catch (Exception e)
-            {
-                Core.Log.LogError($"Error updating UI elements: {e}");
-            }
+    internal static void InitializeFamiliarBar()
+    {
+        if (_familiarBar)
+        {
+            ConfigureHorizontalProgressBar(ref _familiarBarGameObject, ref _familiarInformationPanel,
+                ref _familiarFill, ref _familiarText, ref _familiarHeader, Element.Familiars, Color.yellow,
+                ref _familiarMaxHealth, ref _familiarPhysicalPower, ref _familiarSpellPower);
+        }
+    }
 
-            if (_killSwitch) yield break;
+    internal static void InitializeQuestTracker()
+    {
+        if (_questTracker)
+        {
+            ConfigureQuestWindow(ref _dailyQuestObject, Element.Daily, Color.green, ref _dailyQuestHeader, ref _dailyQuestSubHeader, ref _dailyQuestIcon);
+            ConfigureQuestWindow(ref _weeklyQuestObject, Element.Weekly, Color.magenta, ref _weeklyQuestHeader, ref _weeklyQuestSubHeader, ref _weeklyQuestIcon);
+        }
+    }
 
-            try
-            {
-                if (!_shiftActive && LocalCharacter.TryGetComponent(out AbilityBar_Shared abilityBar_Shared))
-                {
-                    Entity abilityGroupEntity = abilityBar_Shared.CastGroup.GetEntityOnServer();
+    internal static void InitializeProfessions()
+    {
+        if (_professionBars)
+        {
+            ConfigureVerticalProgressBar(ref _alchemyBarGameObject, ref _alchemyProgressFill, ref _alchemyFill, ref _alchemyLevelText, Profession.Alchemy);
+            ConfigureVerticalProgressBar(ref _blacksmithingBarGameObject, ref _blacksmithingProgressFill, ref _blacksmithingFill, ref _blacksmithingLevelText, Profession.Blacksmithing);
+            ConfigureVerticalProgressBar(ref _enchantingBarGameObject, ref _enchantingProgressFill, ref _enchantingFill, ref _enchantingLevelText, Profession.Enchanting);
+            ConfigureVerticalProgressBar(ref _tailoringBarGameObject, ref _tailoringProgressFill, ref _tailoringFill, ref _tailoringLevelText, Profession.Tailoring);
+            ConfigureVerticalProgressBar(ref _fishingBarGameObject, ref _fishingProgressFill, ref _fishingFill, ref _fishingLevelText, Profession.Fishing);
+            ConfigureVerticalProgressBar(ref _harvestingGameObject, ref _harvestingProgressFill, ref _harvestingFill, ref _harvestingLevelText, Profession.Harvesting);
+            ConfigureVerticalProgressBar(ref _miningBarGameObject, ref _miningProgressFill, ref _miningFill, ref _miningLevelText, Profession.Mining);
+            ConfigureVerticalProgressBar(ref _woodcuttingBarGameObject, ref _woodcuttingProgressFill, ref _woodcuttingFill, ref _woodcuttingLevelText, Profession.Woodcutting);
+        }
+    }
 
-                    if (abilityGroupEntity.TryGetComponent(out AbilityGroupState abilityGroupState) && abilityGroupState.SlotIndex == 3) // if ability found on slot 3, activate shift loop
-                    {
-                        if (_shiftRoutine == null)
-                        {
-                            _shiftRoutine = ShiftUpdateLoop().Start();
-                            _shiftActive = true;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Core.Log.LogError($"Error updating ability bar: {e}");
-            }
-
-            bool isSynced = IsGamepad ? _controllerType.Equals(ControllerType.Gamepad) : _controllerType.Equals(ControllerType.KeyboardAndMouse);
-            if (!isSynced) SyncAdaptiveElements(IsGamepad);
-            if (!InitializationPatches.AttributesInitialized) InitializationPatches.TryInitializeAttributeValues();
-
-            yield return _delay;
+    internal static void InitializeShiftSlot()
+    {
+        if (_shiftSlot)
+        {
+            ConfigureShiftSlot(ref _abilityDummyObject, ref _abilityBarEntry, ref _uiState, ref _cooldownParentObject, ref _cooldownText,
+                ref _chargesTextObject, ref _cooldownFillImage, ref _chargesText, ref _chargeCooldownFillImage, ref _chargeCooldownImageObject,
+                ref _abilityEmptyIcon, ref _abilityIcon, ref _keybindObject);
         }
     }
     static void GetAndUpdateWeaponStatBuffer(Entity playerCharacter)

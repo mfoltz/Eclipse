@@ -160,11 +160,7 @@ internal static class ClientChatSystemPatch
                             CanvasService._killSwitch = false;
                         }
 
-                        if (CanvasService._canvasRoutine == null)
-                        {
-                            CanvasService._canvasRoutine = CanvasService.CanvasUpdateLoop().Start();
-                            CanvasService._active = true;
-                        }
+                        CanvasService._active = true;
 
                         break;
                     case (int)NetworkEventSubType.ConfigsToClient:

@@ -6,6 +6,7 @@ internal class QuestManager : IReactiveElement
 {
     public void Awake()
     {
+        CanvasService.InitializeQuestTracker();
     }
 
     public IEnumerator OnUpdate()

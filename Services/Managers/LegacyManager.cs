@@ -6,6 +6,7 @@ internal class LegacyManager : IReactiveElement
 {
     public void Awake()
     {
+        CanvasService.InitializeLegacyBar();
     }
 
     public IEnumerator OnUpdate()
