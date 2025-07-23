@@ -13,6 +13,7 @@ internal class Professions : IReactiveElement
     readonly Dictionary<DataService.Profession, LocalizedText> _levelTexts = new();
     readonly Dictionary<DataService.Profession, Image> _progressFills = new();
     readonly Dictionary<DataService.Profession, Image> _fillImages = new();
+    const int MAX_LEVEL = 100;
 
     public void Awake()
     {
@@ -58,7 +59,18 @@ internal class Professions : IReactiveElement
             _progressFills.TryGetValue(profession, out Image progressFill) &&
             _fillImages.TryGetValue(profession, out Image fill))
         {
-            CanvasService.UpdateProfessions(progress, level, levelText, progressFill, fill, profession);
+            if (CanvasService._killSwitch) return;
+
+            if (level == MAX_LEVEL)
+            {
+                progressFill.fillAmount = 1f;
+                fill.fillAmount = 1f;
+            }
+            else
+            {
+                progressFill.fillAmount = progress;
+                fill.fillAmount = level / (float)MAX_LEVEL;
+            }
         }
     }
 

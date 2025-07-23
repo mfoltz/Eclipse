@@ -1005,22 +1005,6 @@ internal class CanvasService
 
         return _abilityTooltipData != null;
     }
-    static void UpdateProfessions(float progress, int level, LocalizedText levelText, 
-        Image progressFill, Image fill, Profession profession)
-    {
-        if (_killSwitch) return;
-
-        if (level == MAX_PROFESSION_LEVEL)
-        {
-            progressFill.fillAmount = 1f;
-            fill.fillAmount = 1f;
-        }
-        else
-        {
-            progressFill.fillAmount = progress;
-            fill.fillAmount = level / MAX_PROFESSION_LEVEL;
-        }
-    }
     static void UpdateBar(float progress, int level, int maxLevel, 
         int prestiges, LocalizedText levelText, LocalizedText barHeader, 
         Image fill, Element element, string type = "")
@@ -1889,8 +1873,6 @@ internal class CanvasService
     // Public update helpers used by reactive managers
     // update methods moved to reactive components
 
-
-    public static void UpdateProfessions() => Professions?.OnUpdate();
     public static void ResetState()
     {
         foreach (var coroutine in _managerCoroutines)
