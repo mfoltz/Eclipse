@@ -6,18 +6,16 @@ internal class LegacyManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.InitializeLegacyBar();
+        CanvasService.Legacies?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        while (true)
+        return CanvasService.Legacies?.OnUpdate() ?? Dummy();
+
+        static IEnumerator Dummy()
         {
-            if (CanvasService.LegacyEnabled)
-            {
-                CanvasService.UpdateLegacy();
-            }
-            yield return CanvasService.Delay;
+            yield break;
         }
     }
 }

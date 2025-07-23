@@ -6,18 +6,16 @@ internal class ExperienceManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.InitializeExperienceBar();
+        CanvasService.Experience?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        while (true)
+        return CanvasService.Experience?.OnUpdate() ?? Dummy();
+
+        static IEnumerator Dummy()
         {
-            if (CanvasService.ExperienceEnabled)
-            {
-                CanvasService.UpdateExperience();
-            }
-            yield return CanvasService.Delay;
+            yield break;
         }
     }
 }
