@@ -10,31 +10,16 @@ internal class ShiftSlotManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.InitializeShiftSlot();
+        CanvasService.ShiftSlot?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        while (true)
-        {
-            if (CanvasService.ShiftSlotEnabled)
-            {
-                if (!CanvasService._shiftActive && Core.LocalCharacter.TryGetComponent(out AbilityBar_Shared abilityBarShared))
-                {
-                    Entity abilityGroupEntity = abilityBarShared.CastGroup.GetEntityOnServer();
-                    if (abilityGroupEntity.TryGetComponent(out AbilityGroupState abilityGroupState) && abilityGroupState.SlotIndex == 3)
-                    {
-                        if (CanvasService._shiftRoutine == null)
-                        {
-                            CanvasService._shiftRoutine = CanvasService.ShiftUpdateLoop().Start();
-                            CanvasService._shiftActive = true;
-                        }
-                    }
-                }
+        return CanvasService.ShiftSlot?.OnUpdate() ?? Dummy();
 
-                CanvasService.UpdateShiftSlot();
-            }
-            yield return CanvasService.Delay;
+        static IEnumerator Dummy()
+        {
+            yield break;
         }
     }
 }

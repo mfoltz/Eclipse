@@ -6,18 +6,16 @@ internal class ExpertiseManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.InitializeExpertiseBar();
+        CanvasService.Expertise?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        while (true)
+        return CanvasService.Expertise?.OnUpdate() ?? Dummy();
+
+        static IEnumerator Dummy()
         {
-            if (CanvasService.ExpertiseEnabled)
-            {
-                CanvasService.UpdateExpertise();
-            }
-            yield return CanvasService.Delay;
+            yield break;
         }
     }
 }

@@ -315,6 +315,10 @@ internal class CanvasService
     internal static Experience Experience { get; private set; }
     internal static Legacies Legacies { get; private set; }
     internal static Professions Professions { get; private set; }
+    internal static Expertise Expertise { get; private set; }
+    internal static Familiar Familiar { get; private set; }
+    internal static Quests Quests { get; private set; }
+    internal static ShiftSlot ShiftSlot { get; private set; }
 
     internal static void SetElementState(GameObject obj, bool state)
     {
@@ -328,12 +332,12 @@ internal class CanvasService
     {
         {Element.Experience, () => Experience?.Toggle()},
         {Element.Legacy, () => Legacies?.Toggle()},
-        {Element.Expertise, ExpertiseToggle},
-        {Element.Familiars, FamiliarToggle},
+        {Element.Expertise, () => Expertise?.Toggle()},
+        {Element.Familiars, () => Familiar?.Toggle()},
         {Element.Professions, () => Professions?.Toggle()},
-        {Element.Daily, DailyQuestToggle},
-        {Element.Weekly, WeeklyQuestToggle},
-        {Element.ShiftSlot, ShiftSlotToggle}
+        {Element.Daily, () => Quests?.Toggle()},
+        {Element.Weekly, () => Quests?.Toggle()},
+        {Element.ShiftSlot, () => ShiftSlot?.Toggle()}
     };
 
     static readonly Dictionary<Element, string> _abilitySlotPaths = new()
@@ -409,6 +413,10 @@ internal class CanvasService
             Experience = new Experience();
             Legacies = new Legacies();
             Professions = new Professions();
+            Expertise = new Expertise();
+            Familiar = new Familiar();
+            Quests = new Quests();
+            ShiftSlot = new ShiftSlot();
 
             _managers.AddRange(new IReactiveElement[]
             {
@@ -593,42 +601,6 @@ internal class CanvasService
             _elementStates[gameObject] = newState;
         }
     }
-    // toggled by reactive components
-    static void ExpertiseToggle()
-    {
-        bool active = !_expertiseBarGameObject.activeSelf;
-
-        _expertiseBarGameObject.SetActive(active);
-        _elementStates[_expertiseBarGameObject] = active;
-    }
-    static void FamiliarToggle()
-    {
-        bool active = !_familiarBarGameObject.activeSelf;
-
-        _familiarBarGameObject.SetActive(active);
-        _elementStates[_familiarBarGameObject] = active;
-    }
-    static void DailyQuestToggle()
-    {
-        bool active = !_dailyQuestObject.activeSelf;
-
-        _dailyQuestObject.SetActive(active);
-        _elementStates[_dailyQuestObject] = active;
-    }
-    static void WeeklyQuestToggle()
-    {
-        bool active = !_weeklyQuestObject.activeSelf;
-
-        _weeklyQuestObject.SetActive(active);
-        _elementStates[_weeklyQuestObject] = active;
-    }
-    static void ShiftSlotToggle()
-    {
-        bool active = !_abilityDummyObject.activeSelf;
-
-        _abilityDummyObject.SetActive(active);
-        _elementStates[_abilityDummyObject] = active;
-    }
     static void InitializeBloodButton()
     {
         GameObject bloodObject = GameObject.Find(BLOOD_ORB_PATH);
@@ -654,46 +626,6 @@ internal class CanvasService
 
     // initialization moved to reactive components
 
-    internal static void InitializeExpertiseBar()
-    {
-        if (_expertiseBar)
-        {
-            ConfigureHorizontalProgressBar(ref _expertiseBarGameObject, ref _expertiseInformationPanel,
-                ref _expertiseFill, ref _expertiseText, ref _expertiseHeader, Element.Expertise, Color.grey,
-                ref _firstExpertiseStat, ref _secondExpertiseStat, ref _thirdExpertiseStat);
-        }
-    }
-
-    internal static void InitializeFamiliarBar()
-    {
-        if (_familiarBar)
-        {
-            ConfigureHorizontalProgressBar(ref _familiarBarGameObject, ref _familiarInformationPanel,
-                ref _familiarFill, ref _familiarText, ref _familiarHeader, Element.Familiars, Color.yellow,
-                ref _familiarMaxHealth, ref _familiarPhysicalPower, ref _familiarSpellPower);
-        }
-    }
-
-    internal static void InitializeQuestTracker()
-    {
-        if (_questTracker)
-        {
-            ConfigureQuestWindow(ref _dailyQuestObject, Element.Daily, Color.green, ref _dailyQuestHeader, ref _dailyQuestSubHeader, ref _dailyQuestIcon);
-            ConfigureQuestWindow(ref _weeklyQuestObject, Element.Weekly, Color.magenta, ref _weeklyQuestHeader, ref _weeklyQuestSubHeader, ref _weeklyQuestIcon);
-        }
-    }
-
-    // profession initialization handled by Professions component
-
-    internal static void InitializeShiftSlot()
-    {
-        if (_shiftSlot)
-        {
-            ConfigureShiftSlot(ref _abilityDummyObject, ref _abilityBarEntry, ref _uiState, ref _cooldownParentObject, ref _cooldownText,
-                ref _chargesTextObject, ref _cooldownFillImage, ref _chargesText, ref _chargeCooldownFillImage, ref _chargeCooldownImageObject,
-                ref _abilityEmptyIcon, ref _abilityIcon, ref _keybindObject);
-        }
-    }
     static void GetAndUpdateWeaponStatBuffer(Entity playerCharacter)
     {
         if (!playerCharacter.TryGetComponent(out Equipment equipment)) return;
@@ -1957,63 +1889,8 @@ internal class CanvasService
     // Public update helpers used by reactive managers
     // update methods moved to reactive components
 
-    public static void UpdateExpertise()
-    {
-        if (!_expertiseBar) return;
-
-        UpdateBar(_expertiseProgress, _expertiseLevel, _expertiseMaxLevel, _expertisePrestige,
-            _expertiseText, _expertiseHeader, _expertiseFill, Element.Expertise, _expertiseType);
-        UpdateWeaponStats(_expertiseBonusStats, [_firstExpertiseStat, _secondExpertiseStat, _thirdExpertiseStat], GetWeaponStatInfo);
-        GetAndUpdateWeaponStatBuffer(LocalCharacter);
-    }
-
-    public static void UpdateFamiliar()
-    {
-        if (!_familiarBar) return;
-
-        UpdateBar(_familiarProgress, _familiarLevel, _familiarMaxLevel, _familiarPrestige,
-            _familiarText, _familiarHeader, _familiarFill, Element.Familiars, _familiarName);
-        UpdateFamiliarStats(_familiarStats, [_familiarMaxHealth, _familiarPhysicalPower, _familiarSpellPower]);
-    }
 
     public static void UpdateProfessions() => Professions?.OnUpdate();
-
-    public static void UpdateQuests()
-    {
-        if (!_questTracker) return;
-
-        UpdateQuests(_dailyQuestObject, _dailyQuestSubHeader, _dailyQuestIcon, _dailyTargetType, _dailyTarget, _dailyProgress, _dailyGoal, _dailyVBlood);
-        UpdateQuests(_weeklyQuestObject, _weeklyQuestSubHeader, _weeklyQuestIcon, _weeklyTargetType, _weeklyTarget, _weeklyProgress, _weeklyGoal, _weeklyVBlood);
-    }
-
-    public static void UpdateShiftSlot()
-    {
-        if (_killSwitch || !_shiftActive) return;
-
-        if (LocalCharacter.TryGetComponent(out AbilityBar_Shared abilityBar_Shared))
-        {
-            Entity abilityGroupEntity = abilityBar_Shared.CastGroup.GetEntityOnServer();
-            Entity abilityCastEntity = abilityBar_Shared.CastAbility.GetEntityOnServer();
-
-            if (abilityGroupEntity.TryGetComponent(out AbilityGroupState abilityGroupState) && abilityGroupState.SlotIndex == 3)
-            {
-                PrefabGUID currentPrefabGUID = abilityGroupEntity.GetPrefabGUID();
-                if (TryUpdateTooltipData(abilityGroupEntity, currentPrefabGUID))
-                {
-                    UpdateAbilityData(_abilityTooltipData, abilityGroupEntity, abilityCastEntity, currentPrefabGUID);
-                }
-                else if (_abilityTooltipData != null)
-                {
-                    UpdateAbilityData(_abilityTooltipData, abilityGroupEntity, abilityCastEntity, currentPrefabGUID);
-                }
-            }
-
-            if (_abilityTooltipData != null)
-            {
-                UpdateAbilityState(abilityGroupEntity, abilityCastEntity);
-            }
-        }
-    }
     public static void ResetState()
     {
         foreach (var coroutine in _managerCoroutines)
