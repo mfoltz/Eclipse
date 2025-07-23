@@ -1,11 +1,18 @@
 ﻿using Stunlock.Core;
 using System.Globalization;
+using System.IO;
+using Eclipse.DTOs;
 using UnityEngine;
 using static Eclipse.Services.CanvasService;
 
 namespace Eclipse.Services;
 internal static class DataService
 {
+    public static IDataParser Parser { get; private set; } = new LegacyDataParser();
+
+    public static void UseJsonParser() => Parser = new JsonDataParser();
+    public static void UseLegacyParser() => Parser = new LegacyDataParser();
+
     [Flags]
     public enum ReservedFlags : int
     {
@@ -369,6 +376,20 @@ internal static class DataService
 
         return [..serverMessage.Split(',')];
     }
+    public static void LoadConfigFromFile(string filePath)
+    {
+        if (!File.Exists(filePath)) return;
+        string json = File.ReadAllText(filePath);
+        Parser.ParseConfig(json);
+    }
+
+    public static void LoadPlayerDataFromFile(string filePath)
+    {
+        if (!File.Exists(filePath)) return;
+        string json = File.ReadAllText(filePath);
+        Parser.ParsePlayer(json);
+    }
+
     public static void ParseConfigData(List<string> configData)
     {
         int index = 0;
@@ -490,6 +511,94 @@ internal static class DataService
         ShiftSpellData shiftSpellData = new(playerData[index]);
         _shiftSpellIndex = shiftSpellData.ShiftSpellIndex;
     }
+    public static void ApplyConfigDto(ConfigDto dto)
+    {
+        _prestigeStatMultiplier = dto.PrestigeStatMultiplier;
+        _classStatMultiplier = dto.ClassStatMultiplier;
+        _experienceMaxLevel = dto.MaxPlayerLevel;
+        _legacyMaxLevel = dto.MaxLegacyLevel;
+        _expertiseMaxLevel = dto.MaxExpertiseLevel;
+        _familiarMaxLevel = dto.MaxFamiliarLevel;
+        _reservedFlags = (ReservedFlags)dto.ReservedFlags;
+        _extraRecipes = dto.ExtraRecipes;
+        _primalCost = new(dto.PrimalCost);
+        _weaponStatValues = dto.WeaponStatValues;
+        _bloodStatValues = dto.BloodStatValues;
+        _classStatSynergies = dto.ClassStatSynergies.ToDictionary(k => k.Key, v => (v.Value.WeaponStats, v.Value.BloodStats));
+        try
+        {
+            if (_extraRecipes) Recipes.ModifyRecipes();
+        }
+        catch (Exception ex)
+        {
+            Core.Log.LogWarning($"Failed to modify recipes: {ex}");
+        }
+    }
+
+    public static void ApplyPlayerDto(PlayerDataDto dto)
+    {
+        var exp = dto.Experience;
+        _experienceProgress = exp.Progress;
+        _experienceLevel = exp.Level;
+        _experiencePrestige = exp.Prestige;
+        _classType = exp.Class;
+
+        var leg = dto.Legacy;
+        _legacyProgress = leg.Progress;
+        _legacyLevel = leg.Level;
+        _legacyPrestige = leg.Prestige;
+        _legacyType = leg.LegacyType;
+        _legacyBonusStats = leg.BonusStats;
+
+        var ex2 = dto.Expertise;
+        _expertiseProgress = ex2.Progress;
+        _expertiseLevel = ex2.Level;
+        _expertisePrestige = ex2.Prestige;
+        _expertiseType = ex2.ExpertiseType;
+        _expertiseBonusStats = ex2.BonusStats;
+
+        var fam = dto.Familiar;
+        _familiarProgress = fam.Progress;
+        _familiarLevel = fam.Level;
+        _familiarPrestige = fam.Prestige;
+        _familiarName = fam.FamiliarName;
+        _familiarStats = fam.FamiliarStats;
+
+        var prof = dto.Professions;
+        _enchantingProgress = prof.EnchantingProgress;
+        _enchantingLevel = prof.EnchantingLevel;
+        _alchemyProgress = prof.AlchemyProgress;
+        _alchemyLevel = prof.AlchemyLevel;
+        _harvestingProgress = prof.HarvestingProgress;
+        _harvestingLevel = prof.HarvestingLevel;
+        _blacksmithingProgress = prof.BlacksmithingProgress;
+        _blacksmithingLevel = prof.BlacksmithingLevel;
+        _tailoringProgress = prof.TailoringProgress;
+        _tailoringLevel = prof.TailoringLevel;
+        _woodcuttingProgress = prof.WoodcuttingProgress;
+        _woodcuttingLevel = prof.WoodcuttingLevel;
+        _miningProgress = prof.MiningProgress;
+        _miningLevel = prof.MiningLevel;
+        _fishingProgress = prof.FishingProgress;
+        _fishingLevel = prof.FishingLevel;
+
+        var daily = dto.DailyQuest;
+        _dailyTargetType = daily.TargetType;
+        _dailyProgress = daily.Progress;
+        _dailyGoal = daily.Goal;
+        _dailyTarget = daily.Target;
+        _dailyVBlood = daily.IsVBlood;
+
+        var weekly = dto.WeeklyQuest;
+        _weeklyTargetType = weekly.TargetType;
+        _weeklyProgress = weekly.Progress;
+        _weeklyGoal = weekly.Goal;
+        _weeklyTarget = weekly.Target;
+        _weeklyVBlood = weekly.IsVBlood;
+
+        _shiftSpellIndex = dto.ShiftSpellIndex;
+    }
+
 
     /*
     public static WeaponType GetWeaponTypeFromWeaponEntity(Entity weaponEntity)
