@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Eclipse.Utilities.Extensions;
 using static Eclipse.Services.DataService;
 using static Eclipse.Utilities.GameObjects;
 using static UnityEngine.Rendering.HighDefinition.HDCachedShadowAtlas;

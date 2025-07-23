@@ -2,6 +2,7 @@ using Eclipse.Services;
 using HarmonyLib;
 using ProjectM;
 using ProjectM.UI;
+using Eclipse.Utilities.Extensions;
 
 namespace Eclipse.Patches;
 

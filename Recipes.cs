@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Unity.Entities;
 using UnityEngine;
+using Eclipse.Utilities.Extensions;
 
 namespace Eclipse;
 internal static class Recipes
