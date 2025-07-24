@@ -16,6 +16,11 @@ internal static class DataService
 
     internal static ExperienceState Experience { get; } = new();
     internal static LegacyState Legacy { get; } = new();
+    internal static ExpertiseState Expertise { get; } = new();
+    internal static FamiliarState Familiar { get; } = new();
+    internal static ProfessionsState Professions { get; } = new();
+    internal static QuestState Quests { get; } = new();
+    internal static ShiftSlotState ShiftSlot { get; } = new();
 
     [Flags]
     public enum ReservedFlags : int
