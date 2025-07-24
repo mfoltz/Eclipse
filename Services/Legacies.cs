@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using ProjectM.UI;
+using Eclipse.States;
 
 namespace Eclipse.Services;
 
 internal class Legacies : IReactiveElement
 {
+    readonly LegacyState _state;
     GameObject _barGameObject;
     GameObject _informationPanel;
     LocalizedText _firstStat;
@@ -16,6 +18,11 @@ internal class Legacies : IReactiveElement
     LocalizedText _header;
     LocalizedText _text;
     Image _fill;
+
+    public Legacies(LegacyState state)
+    {
+        _state = state;
+    }
 
     public void Awake()
     {
@@ -33,10 +40,10 @@ internal class Legacies : IReactiveElement
         {
             if (CanvasService.LegacyEnabled)
             {
-                CanvasService.UpdateBar(CanvasService._legacyProgress, CanvasService._legacyLevel,
-                    CanvasService._legacyMaxLevel, CanvasService._legacyPrestige,
-                    _text, _header, _fill, CanvasService.Element.Legacy, CanvasService._legacyType);
-                CanvasService.UpdateBloodStats(CanvasService._legacyBonusStats,
+                CanvasService.UpdateBar(_state.Progress, _state.Level,
+                    _state.MaxLevel, _state.Prestige,
+                    _text, _header, _fill, CanvasService.Element.Legacy, _state.LegacyType);
+                CanvasService.UpdateBloodStats(_state.BonusStats,
                     new List<LocalizedText> { _firstStat, _secondStat, _thirdStat }, CanvasService.GetBloodStatInfo);
             }
             yield return CanvasService.Delay;

@@ -16,6 +16,7 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Eclipse.Utilities.Extensions;
+using Eclipse.States;
 using static Eclipse.Services.DataService;
 using static Eclipse.Utilities.GameObjects;
 using static UnityEngine.Rendering.HighDefinition.HDCachedShadowAtlas;
@@ -162,20 +163,8 @@ internal class CanvasService
     static Canvas _targetInfoPanelCanvas;
     public static string _version = string.Empty;
 
-    // moved to Experience component
-    public static float _experienceProgress = 0f;
-    public static int _experienceLevel = 0;
-    public static int _experiencePrestige = 0;
-    public static int _experienceMaxLevel = 90;
-    public static PlayerClass _classType = PlayerClass.None;
-
-    // moved to Legacies component
-    public static string _legacyType;
-    public static float _legacyProgress = 0f;
-    public static int _legacyLevel = 0;
-    public static int _legacyPrestige = 0;
-    public static int _legacyMaxLevel = 100;
-    public static List<string> _legacyBonusStats = ["", "", ""];
+    internal static ExperienceState ExperienceState => DataService.Experience;
+    internal static LegacyState LegacyState => DataService.Legacy;
 
     static GameObject _expertiseBarGameObject;
     static GameObject _expertiseInformationPanel;
@@ -410,8 +399,8 @@ internal class CanvasService
 
         try
         {
-            Experience = new Experience();
-            Legacies = new Legacies();
+            Experience = new Experience(DataService.Experience);
+            Legacies = new Legacies(DataService.Legacy);
             Professions = new Professions();
             Expertise = new Expertise();
             Familiar = new Familiar();
@@ -1152,7 +1141,7 @@ internal class CanvasService
         {
             if (_weaponStatValues.TryGetValue(weaponStat, out float statValue))
             {
-                float classMultiplier = ClassSynergy(weaponStat, _classType, _classStatSynergies);
+                float classMultiplier = ClassSynergy(weaponStat, ExperienceState.Class, _classStatSynergies);
                 statValue *= (1 + _prestigeStatMultiplier * _expertisePrestige) * classMultiplier * ((float)_expertiseLevel / _expertiseMaxLevel);
                 float displayStatValue = statValue;
                 int statModificationId = ModificationIds.GenerateId(0, (int)weaponStat, statValue);
@@ -1197,8 +1186,8 @@ internal class CanvasService
         {
             if (_bloodStatValues.TryGetValue(bloodStat, out float statValue))
             {
-                float classMultiplier = ClassSynergy(bloodStat, _classType, _classStatSynergies);
-                statValue *= (1 + _prestigeStatMultiplier * _legacyPrestige) * classMultiplier * ((float)_legacyLevel / _legacyMaxLevel);
+                float classMultiplier = ClassSynergy(bloodStat, ExperienceState.Class, _classStatSynergies);
+                statValue *= (1 + _prestigeStatMultiplier * LegacyState.Prestige) * classMultiplier * ((float)LegacyState.Level / LegacyState.MaxLevel);
                 string displayString = $"<color=#00FFFF>{BloodStatTypeAbbreviations[bloodStat]}</color>: <color=#90EE90>{(statValue * 100).ToString("F0") + "%"}</color>";
 
                 int statModificationId = ModificationIds.GenerateId(1, (int)bloodStat, statValue);

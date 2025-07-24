@@ -4,7 +4,7 @@ using System.IO;
 using Eclipse.DTOs;
 using UnityEngine;
 using Eclipse.Utilities.Extensions;
-using static Eclipse.Services.CanvasService;
+using Eclipse.States;
 
 namespace Eclipse.Services;
 internal static class DataService
@@ -13,6 +13,9 @@ internal static class DataService
 
     public static void UseJsonParser() => Parser = new JsonDataParser();
     public static void UseLegacyParser() => Parser = new LegacyDataParser();
+
+    internal static ExperienceState Experience { get; } = new();
+    internal static LegacyState Legacy { get; } = new();
 
     [Flags]
     public enum ReservedFlags : int
@@ -415,8 +418,8 @@ internal static class DataService
             _prestigeStatMultiplier = parsedConfigData.PrestigeStatMultiplier;
             _classStatMultiplier = parsedConfigData.ClassStatMultiplier;
 
-            _experienceMaxLevel = parsedConfigData.MaxPlayerLevel;
-            _legacyMaxLevel = parsedConfigData.MaxLegacyLevel;
+            Experience.MaxLevel = parsedConfigData.MaxPlayerLevel;
+            Legacy.MaxLevel = parsedConfigData.MaxLegacyLevel;
             _expertiseMaxLevel = parsedConfigData.MaxExpertiseLevel;
             _familiarMaxLevel = parsedConfigData.MaxFamiliarLevel;
 
@@ -457,16 +460,16 @@ internal static class DataService
         QuestData dailyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
         QuestData weeklyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
 
-        _experienceProgress = experienceData.Progress;
-        _experienceLevel = experienceData.Level;
-        _experiencePrestige = experienceData.Prestige;
-        _classType = experienceData.Class;
+        Experience.Progress = experienceData.Progress;
+        Experience.Level = experienceData.Level;
+        Experience.Prestige = experienceData.Prestige;
+        Experience.Class = experienceData.Class;
 
-        _legacyProgress = legacyData.Progress;
-        _legacyLevel = legacyData.Level;
-        _legacyPrestige = legacyData.Prestige;
-        _legacyType = legacyData.LegacyType;
-        _legacyBonusStats = legacyData.BonusStats;
+        Legacy.Progress = legacyData.Progress;
+        Legacy.Level = legacyData.Level;
+        Legacy.Prestige = legacyData.Prestige;
+        Legacy.LegacyType = legacyData.LegacyType;
+        Legacy.BonusStats = legacyData.BonusStats;
 
         _expertiseProgress = expertiseData.Progress;
         _expertiseLevel = expertiseData.Level;
@@ -516,8 +519,8 @@ internal static class DataService
     {
         _prestigeStatMultiplier = dto.PrestigeStatMultiplier;
         _classStatMultiplier = dto.ClassStatMultiplier;
-        _experienceMaxLevel = dto.MaxPlayerLevel;
-        _legacyMaxLevel = dto.MaxLegacyLevel;
+        Experience.MaxLevel = dto.MaxPlayerLevel;
+        Legacy.MaxLevel = dto.MaxLegacyLevel;
         _expertiseMaxLevel = dto.MaxExpertiseLevel;
         _familiarMaxLevel = dto.MaxFamiliarLevel;
         _reservedFlags = (ReservedFlags)dto.ReservedFlags;
@@ -539,17 +542,17 @@ internal static class DataService
     public static void ApplyPlayerDto(PlayerDataDto dto)
     {
         var exp = dto.Experience;
-        _experienceProgress = exp.Progress;
-        _experienceLevel = exp.Level;
-        _experiencePrestige = exp.Prestige;
-        _classType = exp.Class;
+        Experience.Progress = exp.Progress;
+        Experience.Level = exp.Level;
+        Experience.Prestige = exp.Prestige;
+        Experience.Class = exp.Class;
 
         var leg = dto.Legacy;
-        _legacyProgress = leg.Progress;
-        _legacyLevel = leg.Level;
-        _legacyPrestige = leg.Prestige;
-        _legacyType = leg.LegacyType;
-        _legacyBonusStats = leg.BonusStats;
+        Legacy.Progress = leg.Progress;
+        Legacy.Level = leg.Level;
+        Legacy.Prestige = leg.Prestige;
+        Legacy.LegacyType = leg.LegacyType;
+        Legacy.BonusStats = leg.BonusStats;
 
         var ex2 = dto.Expertise;
         _expertiseProgress = ex2.Progress;
