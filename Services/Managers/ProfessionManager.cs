@@ -6,18 +6,16 @@ internal class ProfessionManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.InitializeProfessions();
+        CanvasService.Professions?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        while (true)
+        return CanvasService.Professions?.OnUpdate() ?? Dummy();
+
+        static IEnumerator Dummy()
         {
-            if (CanvasService.ProfessionsEnabled)
-            {
-                CanvasService.UpdateProfessions();
-            }
-            yield return CanvasService.Delay;
+            yield break;
         }
     }
 }

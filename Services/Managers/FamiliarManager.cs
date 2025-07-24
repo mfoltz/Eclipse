@@ -6,18 +6,16 @@ internal class FamiliarManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.InitializeFamiliarBar();
+        CanvasService.Familiar?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        while (true)
+        return CanvasService.Familiar?.OnUpdate() ?? Dummy();
+
+        static IEnumerator Dummy()
         {
-            if (CanvasService.FamiliarEnabled)
-            {
-                CanvasService.UpdateFamiliar();
-            }
-            yield return CanvasService.Delay;
+            yield break;
         }
     }
 }

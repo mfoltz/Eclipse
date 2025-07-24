@@ -3,7 +3,8 @@ using System.Globalization;
 using System.IO;
 using Eclipse.DTOs;
 using UnityEngine;
-using static Eclipse.Services.CanvasService;
+using Eclipse.Utilities.Extensions;
+using Eclipse.States;
 
 namespace Eclipse.Services;
 internal static class DataService
@@ -12,6 +13,14 @@ internal static class DataService
 
     public static void UseJsonParser() => Parser = new JsonDataParser();
     public static void UseLegacyParser() => Parser = new LegacyDataParser();
+
+    internal static ExperienceState Experience { get; } = new();
+    internal static LegacyState Legacy { get; } = new();
+    internal static ExpertiseState Expertise { get; } = new();
+    internal static FamiliarState Familiar { get; } = new();
+    internal static ProfessionsState Professions { get; } = new();
+    internal static QuestState Quests { get; } = new();
+    internal static ShiftSlotState ShiftSlot { get; } = new();
 
     [Flags]
     public enum ReservedFlags : int
@@ -414,8 +423,8 @@ internal static class DataService
             _prestigeStatMultiplier = parsedConfigData.PrestigeStatMultiplier;
             _classStatMultiplier = parsedConfigData.ClassStatMultiplier;
 
-            _experienceMaxLevel = parsedConfigData.MaxPlayerLevel;
-            _legacyMaxLevel = parsedConfigData.MaxLegacyLevel;
+            Experience.MaxLevel = parsedConfigData.MaxPlayerLevel;
+            Legacy.MaxLevel = parsedConfigData.MaxLegacyLevel;
             _expertiseMaxLevel = parsedConfigData.MaxExpertiseLevel;
             _familiarMaxLevel = parsedConfigData.MaxFamiliarLevel;
 
@@ -456,67 +465,67 @@ internal static class DataService
         QuestData dailyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
         QuestData weeklyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
 
-        _experienceProgress = experienceData.Progress;
-        _experienceLevel = experienceData.Level;
-        _experiencePrestige = experienceData.Prestige;
-        _classType = experienceData.Class;
+        Experience.Progress = experienceData.Progress;
+        Experience.Level = experienceData.Level;
+        Experience.Prestige = experienceData.Prestige;
+        Experience.Class = experienceData.Class;
 
-        _legacyProgress = legacyData.Progress;
-        _legacyLevel = legacyData.Level;
-        _legacyPrestige = legacyData.Prestige;
-        _legacyType = legacyData.LegacyType;
-        _legacyBonusStats = legacyData.BonusStats;
+        Legacy.Progress = legacyData.Progress;
+        Legacy.Level = legacyData.Level;
+        Legacy.Prestige = legacyData.Prestige;
+        Legacy.LegacyType = legacyData.LegacyType;
+        Legacy.BonusStats = legacyData.BonusStats;
 
-        _expertiseProgress = expertiseData.Progress;
-        _expertiseLevel = expertiseData.Level;
-        _expertisePrestige = expertiseData.Prestige;
-        _expertiseType = expertiseData.ExpertiseType;
-        _expertiseBonusStats = expertiseData.BonusStats;
+        Expertise.Progress = expertiseData.Progress;
+        Expertise.Level = expertiseData.Level;
+        Expertise.Prestige = expertiseData.Prestige;
+        Expertise.ExpertiseType = expertiseData.ExpertiseType;
+        Expertise.BonusStats = expertiseData.BonusStats;
 
-        _familiarProgress = familiarData.Progress;
-        _familiarLevel = familiarData.Level;
-        _familiarPrestige = familiarData.Prestige;
-        _familiarName = familiarData.FamiliarName;
-        _familiarStats = familiarData.FamiliarStats;
+        Familiar.Progress = familiarData.Progress;
+        Familiar.Level = familiarData.Level;
+        Familiar.Prestige = familiarData.Prestige;
+        Familiar.Name = familiarData.FamiliarName;
+        Familiar.Stats = familiarData.FamiliarStats;
 
-        _enchantingProgress = professionData.EnchantingProgress;
-        _enchantingLevel = professionData.EnchantingLevel;
-        _alchemyProgress = professionData.AlchemyProgress;
-        _alchemyLevel = professionData.AlchemyLevel;
-        _harvestingProgress = professionData.HarvestingProgress;
-        _harvestingLevel = professionData.HarvestingLevel;
-        _blacksmithingProgress = professionData.BlacksmithingProgress;
-        _blacksmithingLevel = professionData.BlacksmithingLevel;
-        _tailoringProgress = professionData.TailoringProgress;
-        _tailoringLevel = professionData.TailoringLevel;
-        _woodcuttingProgress = professionData.WoodcuttingProgress;
-        _woodcuttingLevel = professionData.WoodcuttingLevel;
-        _miningProgress = professionData.MiningProgress;
-        _miningLevel = professionData.MiningLevel;
-        _fishingProgress = professionData.FishingProgress;
-        _fishingLevel = professionData.FishingLevel;
+        Professions.EnchantingProgress = professionData.EnchantingProgress;
+        Professions.EnchantingLevel = professionData.EnchantingLevel;
+        Professions.AlchemyProgress = professionData.AlchemyProgress;
+        Professions.AlchemyLevel = professionData.AlchemyLevel;
+        Professions.HarvestingProgress = professionData.HarvestingProgress;
+        Professions.HarvestingLevel = professionData.HarvestingLevel;
+        Professions.BlacksmithingProgress = professionData.BlacksmithingProgress;
+        Professions.BlacksmithingLevel = professionData.BlacksmithingLevel;
+        Professions.TailoringProgress = professionData.TailoringProgress;
+        Professions.TailoringLevel = professionData.TailoringLevel;
+        Professions.WoodcuttingProgress = professionData.WoodcuttingProgress;
+        Professions.WoodcuttingLevel = professionData.WoodcuttingLevel;
+        Professions.MiningProgress = professionData.MiningProgress;
+        Professions.MiningLevel = professionData.MiningLevel;
+        Professions.FishingProgress = professionData.FishingProgress;
+        Professions.FishingLevel = professionData.FishingLevel;
 
-        _dailyTargetType = dailyQuestData.TargetType;
-        _dailyProgress = dailyQuestData.Progress;
-        _dailyGoal = dailyQuestData.Goal;
-        _dailyTarget = dailyQuestData.Target;
-        _dailyVBlood = dailyQuestData.IsVBlood;
+        Quests.DailyTargetType = dailyQuestData.TargetType;
+        Quests.DailyProgress = dailyQuestData.Progress;
+        Quests.DailyGoal = dailyQuestData.Goal;
+        Quests.DailyTarget = dailyQuestData.Target;
+        Quests.DailyVBlood = dailyQuestData.IsVBlood;
 
-        _weeklyTargetType = weeklyQuestData.TargetType;
-        _weeklyProgress = weeklyQuestData.Progress;
-        _weeklyGoal = weeklyQuestData.Goal;
-        _weeklyTarget = weeklyQuestData.Target;
-        _weeklyVBlood = weeklyQuestData.IsVBlood;
+        Quests.WeeklyTargetType = weeklyQuestData.TargetType;
+        Quests.WeeklyProgress = weeklyQuestData.Progress;
+        Quests.WeeklyGoal = weeklyQuestData.Goal;
+        Quests.WeeklyTarget = weeklyQuestData.Target;
+        Quests.WeeklyVBlood = weeklyQuestData.IsVBlood;
 
         ShiftSpellData shiftSpellData = new(playerData[index]);
-        _shiftSpellIndex = shiftSpellData.ShiftSpellIndex;
+        ShiftSlot.ShiftSpellIndex = shiftSpellData.ShiftSpellIndex;
     }
     public static void ApplyConfigDto(ConfigDto dto)
     {
         _prestigeStatMultiplier = dto.PrestigeStatMultiplier;
         _classStatMultiplier = dto.ClassStatMultiplier;
-        _experienceMaxLevel = dto.MaxPlayerLevel;
-        _legacyMaxLevel = dto.MaxLegacyLevel;
+        Experience.MaxLevel = dto.MaxPlayerLevel;
+        Legacy.MaxLevel = dto.MaxLegacyLevel;
         _expertiseMaxLevel = dto.MaxExpertiseLevel;
         _familiarMaxLevel = dto.MaxFamiliarLevel;
         _reservedFlags = (ReservedFlags)dto.ReservedFlags;
@@ -538,65 +547,65 @@ internal static class DataService
     public static void ApplyPlayerDto(PlayerDataDto dto)
     {
         var exp = dto.Experience;
-        _experienceProgress = exp.Progress;
-        _experienceLevel = exp.Level;
-        _experiencePrestige = exp.Prestige;
-        _classType = exp.Class;
+        Experience.Progress = exp.Progress;
+        Experience.Level = exp.Level;
+        Experience.Prestige = exp.Prestige;
+        Experience.Class = exp.Class;
 
         var leg = dto.Legacy;
-        _legacyProgress = leg.Progress;
-        _legacyLevel = leg.Level;
-        _legacyPrestige = leg.Prestige;
-        _legacyType = leg.LegacyType;
-        _legacyBonusStats = leg.BonusStats;
+        Legacy.Progress = leg.Progress;
+        Legacy.Level = leg.Level;
+        Legacy.Prestige = leg.Prestige;
+        Legacy.LegacyType = leg.LegacyType;
+        Legacy.BonusStats = leg.BonusStats;
 
         var ex2 = dto.Expertise;
-        _expertiseProgress = ex2.Progress;
-        _expertiseLevel = ex2.Level;
-        _expertisePrestige = ex2.Prestige;
-        _expertiseType = ex2.ExpertiseType;
-        _expertiseBonusStats = ex2.BonusStats;
+        Expertise.Progress = ex2.Progress;
+        Expertise.Level = ex2.Level;
+        Expertise.Prestige = ex2.Prestige;
+        Expertise.ExpertiseType = ex2.ExpertiseType;
+        Expertise.BonusStats = ex2.BonusStats;
 
         var fam = dto.Familiar;
-        _familiarProgress = fam.Progress;
-        _familiarLevel = fam.Level;
-        _familiarPrestige = fam.Prestige;
-        _familiarName = fam.FamiliarName;
-        _familiarStats = fam.FamiliarStats;
+        Familiar.Progress = fam.Progress;
+        Familiar.Level = fam.Level;
+        Familiar.Prestige = fam.Prestige;
+        Familiar.Name = fam.FamiliarName;
+        Familiar.Stats = fam.FamiliarStats;
 
         var prof = dto.Professions;
-        _enchantingProgress = prof.EnchantingProgress;
-        _enchantingLevel = prof.EnchantingLevel;
-        _alchemyProgress = prof.AlchemyProgress;
-        _alchemyLevel = prof.AlchemyLevel;
-        _harvestingProgress = prof.HarvestingProgress;
-        _harvestingLevel = prof.HarvestingLevel;
-        _blacksmithingProgress = prof.BlacksmithingProgress;
-        _blacksmithingLevel = prof.BlacksmithingLevel;
-        _tailoringProgress = prof.TailoringProgress;
-        _tailoringLevel = prof.TailoringLevel;
-        _woodcuttingProgress = prof.WoodcuttingProgress;
-        _woodcuttingLevel = prof.WoodcuttingLevel;
-        _miningProgress = prof.MiningProgress;
-        _miningLevel = prof.MiningLevel;
-        _fishingProgress = prof.FishingProgress;
-        _fishingLevel = prof.FishingLevel;
+        Professions.EnchantingProgress = prof.EnchantingProgress;
+        Professions.EnchantingLevel = prof.EnchantingLevel;
+        Professions.AlchemyProgress = prof.AlchemyProgress;
+        Professions.AlchemyLevel = prof.AlchemyLevel;
+        Professions.HarvestingProgress = prof.HarvestingProgress;
+        Professions.HarvestingLevel = prof.HarvestingLevel;
+        Professions.BlacksmithingProgress = prof.BlacksmithingProgress;
+        Professions.BlacksmithingLevel = prof.BlacksmithingLevel;
+        Professions.TailoringProgress = prof.TailoringProgress;
+        Professions.TailoringLevel = prof.TailoringLevel;
+        Professions.WoodcuttingProgress = prof.WoodcuttingProgress;
+        Professions.WoodcuttingLevel = prof.WoodcuttingLevel;
+        Professions.MiningProgress = prof.MiningProgress;
+        Professions.MiningLevel = prof.MiningLevel;
+        Professions.FishingProgress = prof.FishingProgress;
+        Professions.FishingLevel = prof.FishingLevel;
 
         var daily = dto.DailyQuest;
-        _dailyTargetType = daily.TargetType;
-        _dailyProgress = daily.Progress;
-        _dailyGoal = daily.Goal;
-        _dailyTarget = daily.Target;
-        _dailyVBlood = daily.IsVBlood;
+        Quests.DailyTargetType = daily.TargetType;
+        Quests.DailyProgress = daily.Progress;
+        Quests.DailyGoal = daily.Goal;
+        Quests.DailyTarget = daily.Target;
+        Quests.DailyVBlood = daily.IsVBlood;
 
         var weekly = dto.WeeklyQuest;
-        _weeklyTargetType = weekly.TargetType;
-        _weeklyProgress = weekly.Progress;
-        _weeklyGoal = weekly.Goal;
-        _weeklyTarget = weekly.Target;
-        _weeklyVBlood = weekly.IsVBlood;
+        Quests.WeeklyTargetType = weekly.TargetType;
+        Quests.WeeklyProgress = weekly.Progress;
+        Quests.WeeklyGoal = weekly.Goal;
+        Quests.WeeklyTarget = weekly.Target;
+        Quests.WeeklyVBlood = weekly.IsVBlood;
 
-        _shiftSpellIndex = dto.ShiftSpellIndex;
+        ShiftSlot.ShiftSpellIndex = dto.ShiftSpellIndex;
     }
 
 

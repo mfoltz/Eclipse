@@ -6,18 +6,16 @@ internal class QuestManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.InitializeQuestTracker();
+        CanvasService.Quests?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        while (true)
+        return CanvasService.Quests?.OnUpdate() ?? Dummy();
+
+        static IEnumerator Dummy()
         {
-            if (CanvasService.QuestsEnabled)
-            {
-                CanvasService.UpdateQuests();
-            }
-            yield return CanvasService.Delay;
+            yield break;
         }
     }
 }
