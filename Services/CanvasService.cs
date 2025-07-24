@@ -17,7 +17,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static Eclipse.Services.DataService;
 using static Eclipse.Utilities.GameObjects;
-using static UnityEngine.Rendering.HighDefinition.HDCachedShadowAtlas;
 using Image = UnityEngine.UI.Image;
 
 namespace Eclipse.Services;
@@ -27,33 +26,24 @@ internal class CanvasService
     static SystemService SystemService => Core.SystemService;
     static ManagedDataRegistry ManagedDataRegistry => SystemService.ManagedDataSystem.ManagedDataRegistry;
     static Entity LocalCharacter => Core.LocalCharacter;
-
-    static readonly bool _experienceBar = Plugin.Leveling;
-    static readonly bool _showPrestige = Plugin.Prestige;
-    static readonly bool _legacyBar = Plugin.Legacies;
-    static readonly bool _expertiseBar = Plugin.Expertise;
-    static readonly bool _familiarBar = Plugin.Familiars;
-    static readonly bool _professionBars = Plugin.Professions;
-    static readonly bool _questTracker = Plugin.Quests;
-    static readonly bool _shiftSlot = Plugin.ShiftSlot;
-
-    public static bool ExperienceEnabled => _experienceBar;
-    public static bool LegacyEnabled => _legacyBar;
-    public static bool ExpertiseEnabled => _expertiseBar;
-    public static bool FamiliarEnabled => _familiarBar;
-    public static bool ProfessionsEnabled => _professionBars;
-    public static bool QuestsEnabled => _questTracker;
-    public static bool ShiftSlotEnabled => _shiftSlot;
-    public enum Element
+    public static bool ExperienceEnabled { get; } = Plugin.Leveling;
+    public static bool PrestigeEnabled { get; } = Plugin.Prestige;
+    public static bool LegacyEnabled { get; } = Plugin.Legacies;
+    public static bool ExpertiseEnabled { get; } = Plugin.Expertise;
+    public static bool FamiliarEnabled { get; } = Plugin.Familiars;
+    public static bool ProfessionsEnabled { get; } = Plugin.Professions;
+    public static bool QuestsEnabled { get; } = Plugin.Quests;
+    public static bool ShiftSlotEnabled { get; } = Plugin.ShiftSlot;
+    public enum Element : int
     {
-        Experience,
-        Legacy,
-        Expertise,
-        Familiars,
-        Professions,
-        Daily,
-        Weekly,
-        ShiftSlot
+        Experience = 0,
+        Legacy = 1,
+        Expertise = 2,
+        Familiars = 3,
+        Professions = 4,
+        Daily = 5,
+        Weekly = 6,
+        ShiftSlot = 7
     }
 
     static readonly Dictionary<int, string> _romanNumerals = new()
@@ -62,14 +52,12 @@ internal class CanvasService
         {10, "X"}, {9, "IX"}, {5, "V"}, {4, "IV"},
         {1, "I"}
     };
-
     static readonly List<string> _spriteNames =
     [
-        // sprites for attribute page
-        "Attribute_TierIndicator_Fixed", // class stat synergy?
-        "BloodTypeFrame",                // bl
-        "BloodTypeIcon_Tiny_Warrior",    // wep
-        // older
+        "Attribute_TierIndicator_Fixed",
+        "BloodTypeFrame",
+        "BloodTypeIcon_Tiny_Warrior",
+        // attribute sprites ^
         "BloodIcon_Cursed",
         "BloodIcon_Small_Cursed",
         "BloodIcon_Small_Holy",
@@ -79,23 +67,23 @@ internal class CanvasService
         "Poneti_Icon_Bag",
         "Poneti_Icon_Res_93",
         "Stunlock_Icon_Item_Jewel_Collection4",
-        "Stunlock_Icon_Bag_Background_Alchemy",     
+        "Stunlock_Icon_Bag_Background_Alchemy",
         "Poneti_Icon_Alchemy_02_mortar",
-        "Stunlock_Icon_Bag_Background_Jewel",       
+        "Stunlock_Icon_Bag_Background_Jewel",
         "Poneti_Icon_runic_tablet_12",
-        "Stunlock_Icon_Bag_Background_Woodworking", 
-        "Stunlock_Icon_Bag_Background_Herbs",       
-        "Poneti_Icon_Herbalism_35_fellherb",        
-        "Stunlock_Icon_Bag_Background_Fish",        
-        "Poneti_Icon_Cooking_28_fish",              
+        "Stunlock_Icon_Bag_Background_Woodworking",
+        "Stunlock_Icon_Bag_Background_Herbs",
+        "Poneti_Icon_Herbalism_35_fellherb",
+        "Stunlock_Icon_Bag_Background_Fish",
+        "Poneti_Icon_Cooking_28_fish",
         "Poneti_Icon_Cooking_60_oceanfish",
-        "Stunlock_Icon_Bag_Background_Armor",       
-        "Poneti_Icon_Tailoring_38_fiercloth",       
+        "Stunlock_Icon_Bag_Background_Armor",
+        "Poneti_Icon_Tailoring_38_fiercloth",
         "FantasyIcon_ResourceAndCraftAddon (56)",
-        "Stunlock_Icon_Bag_Background_Weapon",     
-        "Poneti_Icon_Sword_v2_48",                  
+        "Stunlock_Icon_Bag_Background_Weapon",
+        "Poneti_Icon_Sword_v2_48",
         "Poneti_Icon_Hammer_30",
-        "Stunlock_Icon_Bag_Background_Consumable",  
+        "Stunlock_Icon_Bag_Background_Consumable",
         "Poneti_Icon_Quest_131",
         "FantasyIcon_Wood_Hallow",
         "Poneti_Icon_Engineering_59_mega_fishingrod",
@@ -117,9 +105,9 @@ internal class CanvasService
         "spell_level_icon"
     ];
 
-    const string BLOOD_ORB_PATH = "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/BloodOrbParent/BloodOrb/BlackBackground/Blood";
+    const string BLOOD_ORB = "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/BloodOrbParent/BloodOrb/BlackBackground/Blood";
 
-    static readonly Dictionary<Profession, string> _professionIcons = new()
+    static readonly Dictionary<Profession, string> _professionSprites = new()
     {
         { Profession.Enchanting, "Item_MagicSource_General_T04_FrozenEye" },
         { Profession.Alchemy, "FantasyIcon_MagicItem (105)" },
@@ -133,28 +121,20 @@ internal class CanvasService
     public static IReadOnlyDictionary<string, Sprite> Sprites => _sprites;
     static readonly Dictionary<string, Sprite> _sprites = [];
 
-    static Sprite _questKillStandardUnit;
-    static Sprite _questKillVBloodUnit;
-
     static readonly Regex _classNameRegex = new("(?<!^)([A-Z])");
-    public static readonly Regex AbilitySpellRegex = new(@"(?<=AB_).*(?=_Group)");
 
     static readonly Dictionary<PlayerClass, Color> _classColorHexMap = new()
     {
         { PlayerClass.ShadowBlade, new Color(0.6f, 0.1f, 0.9f) },  // ignite purple
-        { PlayerClass.DemonHunter, new Color(1f, 0.8f, 0f) },        // static yellow
-        { PlayerClass.BloodKnight, new Color(1f, 0f, 0f) },           // leech red
-        { PlayerClass.ArcaneSorcerer, new Color(0f, 0.5f, 0.5f) },    // weaken teal
-        { PlayerClass.VampireLord, new Color(0f, 1f, 1f) },           // chill cyan
-        { PlayerClass.DeathMage, new Color(0f, 1f, 0f) }              // condemn green
+        { PlayerClass.DemonHunter, new Color(1f, 0.8f, 0f) },      // static yellow
+        { PlayerClass.BloodKnight, new Color(1f, 0f, 0f) },        // leech red
+        { PlayerClass.ArcaneSorcerer, new Color(0f, 0.5f, 0.5f) }, // weaken teal
+        { PlayerClass.VampireLord, new Color(0f, 1f, 1f) },        // chill cyan
+        { PlayerClass.DeathMage, new Color(0f, 1f, 0f) }           // condemn green
     };
 
-    public const string V1_3 = "1.3";
-
-    // static readonly WaitForSeconds _delay = new(1f);
-    static readonly WaitForSeconds _delay = new(0.25f);
-    public static WaitForSeconds Delay => _delay;
-    static readonly WaitForSeconds _shiftDelay = new(0.1f);
+    public static WaitForSeconds Delay { get; } = new(WAIT);
+    const float WAIT = 0.1f;
 
     static UICanvasBase _canvasBase;
     static Canvas _bottomBarCanvas;
@@ -374,14 +354,14 @@ internal class CanvasService
 
     static readonly Dictionary<Element, bool> _activeElements = new()
     {
-        { Element.Experience, _experienceBar },
-        { Element.Legacy, _legacyBar },
-        { Element.Expertise, _expertiseBar },
-        { Element.Familiars, _familiarBar },
-        { Element.Professions, _professionBars },
-        { Element.Daily, _questTracker },
-        { Element.Weekly, _questTracker },
-        { Element.ShiftSlot, _shiftSlot }
+        { Element.Experience, ExperienceEnabled },
+        { Element.Legacy, LegacyEnabled },
+        { Element.Expertise, ExpertiseEnabled },
+        { Element.Familiars, FamiliarEnabled },
+        { Element.Professions, ProfessionsEnabled },
+        { Element.Daily, QuestsEnabled },
+        { Element.Weekly, QuestsEnabled },
+        { Element.ShiftSlot, ShiftSlotEnabled }
     };
 
     const string FISHING = "Go Fish!";
@@ -394,7 +374,7 @@ internal class CanvasService
     public static Coroutine _shiftRoutine;
 
     static readonly PrefabGUID _statsBuff = PrefabGUIDs.SetBonus_AllLeech_T09;
-    static readonly bool _statsBuffActive = _legacyBar || _expertiseBar;
+    static readonly bool _statsBuffActive = LegacyEnabled || ExpertiseEnabled;
 
     static readonly List<IReactiveElement> _managers = [];
     static readonly List<Coroutine> _managerCoroutines = [];
@@ -584,29 +564,29 @@ internal class CanvasService
     }
     static void InitializeUI()
     {
-        if (_experienceBar) ConfigureHorizontalProgressBar(ref _experienceBarGameObject, ref _experienceInformationPanel, 
+        if (ExperienceEnabled) ConfigureHorizontalProgressBar(ref _experienceBarGameObject, ref _experienceInformationPanel, 
             ref _experienceFill, ref _experienceText, ref _experienceHeader, Element.Experience, Color.green, 
             ref _experienceFirstText, ref _experienceClassText, ref _experienceSecondText);
 
-        if (_legacyBar) ConfigureHorizontalProgressBar(ref _legacyBarGameObject, ref _legacyInformationPanel, 
+        if (LegacyEnabled) ConfigureHorizontalProgressBar(ref _legacyBarGameObject, ref _legacyInformationPanel, 
             ref _legacyFill, ref _legacyText, ref _legacyHeader, Element.Legacy, Color.red, 
             ref _firstLegacyStat, ref _secondLegacyStat, ref _thirdLegacyStat);
 
-        if (_expertiseBar) ConfigureHorizontalProgressBar(ref _expertiseBarGameObject, ref _expertiseInformationPanel, 
+        if (ExpertiseEnabled) ConfigureHorizontalProgressBar(ref _expertiseBarGameObject, ref _expertiseInformationPanel, 
             ref _expertiseFill, ref _expertiseText, ref _expertiseHeader, Element.Expertise, Color.grey, 
             ref _firstExpertiseStat, ref _secondExpertiseStat, ref _thirdExpertiseStat);
 
-        if (_familiarBar) ConfigureHorizontalProgressBar(ref _familiarBarGameObject, ref _familiarInformationPanel, 
+        if (FamiliarEnabled) ConfigureHorizontalProgressBar(ref _familiarBarGameObject, ref _familiarInformationPanel, 
             ref _familiarFill, ref _familiarText, ref _familiarHeader, Element.Familiars, Color.yellow, 
             ref _familiarMaxHealth, ref _familiarPhysicalPower, ref _familiarSpellPower);
 
-        if (_questTracker)
+        if (QuestsEnabled)
         {
             ConfigureQuestWindow(ref _dailyQuestObject, Element.Daily, Color.green, ref _dailyQuestHeader, ref _dailyQuestSubHeader, ref _dailyQuestIcon);
             ConfigureQuestWindow(ref _weeklyQuestObject, Element.Weekly, Color.magenta, ref _weeklyQuestHeader, ref _weeklyQuestSubHeader, ref _weeklyQuestIcon);
         }
 
-        if (_professionBars)
+        if (ProfessionsEnabled)
         {
             ConfigureVerticalProgressBar(ref _alchemyBarGameObject, ref _alchemyProgressFill, ref _alchemyFill, ref _alchemyLevelText, Profession.Alchemy);
             ConfigureVerticalProgressBar(ref _blacksmithingBarGameObject, ref _blacksmithingProgressFill, ref _blacksmithingFill, ref _blacksmithingLevelText, Profession.Blacksmithing);
@@ -618,7 +598,7 @@ internal class CanvasService
             ConfigureVerticalProgressBar(ref _woodcuttingBarGameObject, ref _woodcuttingProgressFill, ref _woodcuttingFill, ref _woodcuttingLevelText, Profession.Woodcutting);
         }
 
-        if (_shiftSlot)
+        if (ShiftSlotEnabled)
         {
             ConfigureShiftSlot(ref _abilityDummyObject, ref _abilityBarEntry, ref _uiState, ref _cooldownParentObject, ref _cooldownText,
                 ref _chargesTextObject, ref _cooldownFillImage, ref _chargesText, ref _chargeCooldownFillImage, ref _chargeCooldownImageObject,
@@ -722,7 +702,7 @@ internal class CanvasService
     }
     static void InitializeBloodButton()
     {
-        GameObject bloodObject = GameObject.Find(BLOOD_ORB_PATH);
+        GameObject bloodObject = GameObject.Find(BLOOD_ORB);
 
         if (bloodObject != null)
         {
@@ -745,7 +725,7 @@ internal class CanvasService
 
     internal static void InitializeExperienceBar()
     {
-        if (_experienceBar)
+        if (ExperienceEnabled)
         {
             ConfigureHorizontalProgressBar(ref _experienceBarGameObject, ref _experienceInformationPanel,
                 ref _experienceFill, ref _experienceText, ref _experienceHeader, Element.Experience, Color.green,
@@ -755,7 +735,7 @@ internal class CanvasService
 
     internal static void InitializeLegacyBar()
     {
-        if (_legacyBar)
+        if (LegacyEnabled)
         {
             ConfigureHorizontalProgressBar(ref _legacyBarGameObject, ref _legacyInformationPanel,
                 ref _legacyFill, ref _legacyText, ref _legacyHeader, Element.Legacy, Color.red,
@@ -765,7 +745,7 @@ internal class CanvasService
 
     internal static void InitializeExpertiseBar()
     {
-        if (_expertiseBar)
+        if (ExpertiseEnabled)
         {
             ConfigureHorizontalProgressBar(ref _expertiseBarGameObject, ref _expertiseInformationPanel,
                 ref _expertiseFill, ref _expertiseText, ref _expertiseHeader, Element.Expertise, Color.grey,
@@ -775,7 +755,7 @@ internal class CanvasService
 
     internal static void InitializeFamiliarBar()
     {
-        if (_familiarBar)
+        if (FamiliarEnabled)
         {
             ConfigureHorizontalProgressBar(ref _familiarBarGameObject, ref _familiarInformationPanel,
                 ref _familiarFill, ref _familiarText, ref _familiarHeader, Element.Familiars, Color.yellow,
@@ -785,7 +765,7 @@ internal class CanvasService
 
     internal static void InitializeQuestTracker()
     {
-        if (_questTracker)
+        if (QuestsEnabled)
         {
             ConfigureQuestWindow(ref _dailyQuestObject, Element.Daily, Color.green, ref _dailyQuestHeader, ref _dailyQuestSubHeader, ref _dailyQuestIcon);
             ConfigureQuestWindow(ref _weeklyQuestObject, Element.Weekly, Color.magenta, ref _weeklyQuestHeader, ref _weeklyQuestSubHeader, ref _weeklyQuestIcon);
@@ -794,7 +774,7 @@ internal class CanvasService
 
     internal static void InitializeProfessions()
     {
-        if (_professionBars)
+        if (ProfessionsEnabled)
         {
             ConfigureVerticalProgressBar(ref _alchemyBarGameObject, ref _alchemyProgressFill, ref _alchemyFill, ref _alchemyLevelText, Profession.Alchemy);
             ConfigureVerticalProgressBar(ref _blacksmithingBarGameObject, ref _blacksmithingProgressFill, ref _blacksmithingFill, ref _blacksmithingLevelText, Profession.Blacksmithing);
@@ -809,7 +789,7 @@ internal class CanvasService
 
     internal static void InitializeShiftSlot()
     {
-        if (_shiftSlot)
+        if (ShiftSlotEnabled)
         {
             ConfigureShiftSlot(ref _abilityDummyObject, ref _abilityBarEntry, ref _uiState, ref _cooldownParentObject, ref _cooldownText,
                 ref _chargesTextObject, ref _cooldownFillImage, ref _chargesText, ref _chargeCooldownFillImage, ref _chargeCooldownImageObject,
@@ -1146,12 +1126,12 @@ internal class CanvasService
             }
             else if (!_ready)
             {
-                yield return _delay;
+                yield return Delay;
                 continue;
             }
             else if (!_shiftActive)
             {
-                yield return _delay;
+                yield return Delay;
                 continue;
             }
 
@@ -1248,7 +1228,7 @@ internal class CanvasService
             barHeader.Text.fontSize = _horizontalBarHeaderFontSize;
         }
 
-        if (_showPrestige && prestiges != 0)
+        if (PrestigeEnabled && prestiges != 0)
         {
             string header = "";
 
@@ -1859,7 +1839,7 @@ internal class CanvasService
         GameObject levelBackgroundObject = FindTargetUIObject(barRectTransform.transform, "LevelBackground");
 
         Image levelBackgroundImage = levelBackgroundObject.GetComponent<Image>();
-        Sprite professionIcon = _professionIcons.TryGetValue(profession, out string spriteName) && Sprites.TryGetValue(spriteName, out Sprite sprite) ? sprite : levelBackgroundImage.sprite;
+        Sprite professionIcon = _professionSprites.TryGetValue(profession, out string spriteName) && Sprites.TryGetValue(spriteName, out Sprite sprite) ? sprite : levelBackgroundImage.sprite;
         levelBackgroundImage.sprite = professionIcon ?? levelBackgroundImage.sprite;
         levelBackgroundImage.color = new(1f, 1f, 1f, 1f);
         levelBackgroundObject.transform.localRotation = Quaternion.Euler(0, 0, -90);
@@ -2079,7 +2059,7 @@ internal class CanvasService
     // Public update helpers used by reactive managers
     public static void UpdateExperience()
     {
-        if (!_experienceBar) return;
+        if (!ExperienceEnabled) return;
 
         UpdateBar(_experienceProgress, _experienceLevel, _experienceMaxLevel, _experiencePrestige,
             _experienceText, _experienceHeader, _experienceFill, Element.Experience);
@@ -2088,7 +2068,7 @@ internal class CanvasService
 
     public static void UpdateLegacy()
     {
-        if (!_legacyBar) return;
+        if (!LegacyEnabled) return;
 
         UpdateBar(_legacyProgress, _legacyLevel, _legacyMaxLevel, _legacyPrestige,
             _legacyText, _legacyHeader, _legacyFill, Element.Legacy, _legacyType);
@@ -2097,7 +2077,7 @@ internal class CanvasService
 
     public static void UpdateExpertise()
     {
-        if (!_expertiseBar) return;
+        if (!ExpertiseEnabled) return;
 
         UpdateBar(_expertiseProgress, _expertiseLevel, _expertiseMaxLevel, _expertisePrestige,
             _expertiseText, _expertiseHeader, _expertiseFill, Element.Expertise, _expertiseType);
@@ -2107,7 +2087,7 @@ internal class CanvasService
 
     public static void UpdateFamiliar()
     {
-        if (!_familiarBar) return;
+        if (!FamiliarEnabled) return;
 
         UpdateBar(_familiarProgress, _familiarLevel, _familiarMaxLevel, _familiarPrestige,
             _familiarText, _familiarHeader, _familiarFill, Element.Familiars, _familiarName);
@@ -2116,7 +2096,7 @@ internal class CanvasService
 
     public static void UpdateProfessions()
     {
-        if (!_professionBars) return;
+        if (!ProfessionsEnabled) return;
 
         UpdateProfessions(_alchemyProgress, _alchemyLevel, _alchemyLevelText, _alchemyProgressFill, _alchemyFill, Profession.Alchemy);
         UpdateProfessions(_blacksmithingProgress, _blacksmithingLevel, _blacksmithingLevelText, _blacksmithingProgressFill, _blacksmithingFill, Profession.Blacksmithing);
@@ -2130,7 +2110,7 @@ internal class CanvasService
 
     public static void UpdateQuests()
     {
-        if (!_questTracker) return;
+        if (!QuestsEnabled) return;
 
         UpdateQuests(_dailyQuestObject, _dailyQuestSubHeader, _dailyQuestIcon, _dailyTargetType, _dailyTarget, _dailyProgress, _dailyGoal, _dailyVBlood);
         UpdateQuests(_weeklyQuestObject, _weeklyQuestSubHeader, _weeklyQuestIcon, _weeklyTargetType, _weeklyTarget, _weeklyProgress, _weeklyGoal, _weeklyVBlood);
