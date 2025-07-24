@@ -2,11 +2,13 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using ProjectM.UI;
+using Eclipse.States;
 
 namespace Eclipse.Services;
 
 internal class Experience : IReactiveElement
 {
+    readonly ExperienceState _state;
     GameObject _barGameObject;
     GameObject _informationPanel;
     LocalizedText _header;
@@ -15,6 +17,11 @@ internal class Experience : IReactiveElement
     LocalizedText _classText;
     LocalizedText _secondText;
     Image _fill;
+
+    public Experience(ExperienceState state)
+    {
+        _state = state;
+    }
 
     public void Awake()
     {
@@ -32,10 +39,10 @@ internal class Experience : IReactiveElement
         {
             if (CanvasService.ExperienceEnabled)
             {
-                CanvasService.UpdateBar(CanvasService._experienceProgress, CanvasService._experienceLevel,
-                    CanvasService._experienceMaxLevel, CanvasService._experiencePrestige,
+                CanvasService.UpdateBar(_state.Progress, _state.Level,
+                    _state.MaxLevel, _state.Prestige,
                     _text, _header, _fill, CanvasService.Element.Experience);
-                CanvasService.UpdateClass(CanvasService._classType, _classText);
+                CanvasService.UpdateClass(_state.Class, _classText);
             }
             yield return CanvasService.Delay;
         }
