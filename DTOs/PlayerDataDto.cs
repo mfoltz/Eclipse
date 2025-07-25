@@ -5,7 +5,7 @@ namespace Eclipse.DTOs;
 
 internal class PlayerDataDto
 {
-    internal ExperienceDto Experience { get; set; } = new();
+    internal LevelingDto Leveling { get; set; } = new();
     internal LegacyDto Legacy { get; set; } = new();
     internal ExpertiseDto Expertise { get; set; } = new();
     internal FamiliarDto Familiar { get; set; } = new();
@@ -15,7 +15,7 @@ internal class PlayerDataDto
     internal int ShiftSpellIndex { get; set; }
 }
 
-internal class ExperienceDto
+internal class LevelingDto
 {
     internal float Progress { get; set; }
     internal int Level { get; set; }
@@ -23,13 +23,13 @@ internal class ExperienceDto
     internal DataService.PlayerClass Class { get; set; }
 }
 
-internal class LegacyDto : ExperienceDto
+internal class LegacyDto : LevelingDto
 {
     internal string LegacyType { get; set; } = string.Empty;
     internal List<string> BonusStats { get; set; } = new();
 }
 
-internal class ExpertiseDto : ExperienceDto
+internal class ExpertiseDto : LevelingDto
 {
     internal string ExpertiseType { get; set; } = string.Empty;
     internal List<string> BonusStats { get; set; } = new();

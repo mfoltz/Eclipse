@@ -30,7 +30,7 @@ internal class CanvasService
     static ManagedDataRegistry ManagedDataRegistry => SystemService.ManagedDataSystem.ManagedDataRegistry;
     static Entity LocalCharacter => Core.LocalCharacter;
 
-    static readonly bool _experienceBar = Plugin.Leveling;
+    static readonly bool _levelingBar = Plugin.Leveling;
     static readonly bool _showPrestige = Plugin.Prestige;
     static readonly bool _legacyBar = Plugin.Legacies;
     static readonly bool _expertiseBar = Plugin.Expertise;
@@ -39,7 +39,7 @@ internal class CanvasService
     static readonly bool _questTracker = Plugin.Quests;
     static readonly bool _shiftSlot = Plugin.ShiftSlot;
 
-    public static bool ExperienceEnabled => _experienceBar;
+    public static bool LevelingEnabled => _levelingBar;
     public static bool LegacyEnabled => _legacyBar;
     public static bool ExpertiseEnabled => _expertiseBar;
     public static bool FamiliarEnabled => _familiarBar;
@@ -48,7 +48,7 @@ internal class CanvasService
     public static bool ShiftSlotEnabled => _shiftSlot;
     public enum Element
     {
-        Experience,
+        Leveling,
         Legacy,
         Expertise,
         Familiars,
@@ -163,7 +163,7 @@ internal class CanvasService
     static Canvas _targetInfoPanelCanvas;
     public static string _version = string.Empty;
 
-    internal static ExperienceState ExperienceState => DataService.Experience;
+    internal static LevelingState LevelingState => DataService.Leveling;
     internal static LegacyState LegacyState => DataService.Legacy;
 
     static GameObject _expertiseBarGameObject;
@@ -301,7 +301,7 @@ internal class CanvasService
     static readonly Dictionary<GameObject, bool> _elementStates = [];
     static readonly List<GameObject> _professionElements = [];
 
-    internal static Experience Experience { get; private set; }
+    internal static Leveling Leveling { get; private set; }
     internal static Legacies Legacies { get; private set; }
     internal static Professions Professions { get; private set; }
     internal static Expertise Expertise { get; private set; }
@@ -319,7 +319,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, Action> _abilitySlotToggles = new()
     {
-        {Element.Experience, () => Experience?.Toggle()},
+        {Element.Leveling, () => Leveling?.Toggle()},
         {Element.Legacy, () => Legacies?.Toggle()},
         {Element.Expertise, () => Expertise?.Toggle()},
         {Element.Familiars, () => Familiar?.Toggle()},
@@ -331,7 +331,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, string> _abilitySlotPaths = new()
     {
-        { Element.Experience, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Primary/" },
+        { Element.Leveling, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Primary/" },
         { Element.Legacy, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_WeaponSkill1/" },
         { Element.Expertise, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_WeaponSkill2/" },
         { Element.Familiars, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Travel/" },
@@ -342,7 +342,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, bool> _activeElements = new()
     {
-        { Element.Experience, _experienceBar },
+        { Element.Leveling, _levelingBar },
         { Element.Legacy, _legacyBar },
         { Element.Expertise, _expertiseBar },
         { Element.Familiars, _familiarBar },
@@ -399,7 +399,7 @@ internal class CanvasService
 
         try
         {
-            Experience = new Experience(DataService.Experience);
+            Leveling = new Leveling(DataService.Leveling);
             Legacies = new Legacies(DataService.Legacy);
             Professions = new Professions();
             Expertise = new Expertise();
@@ -409,7 +409,7 @@ internal class CanvasService
 
             _managers.AddRange(new IReactiveElement[]
             {
-                new Managers.ExperienceManager(),
+                new Managers.LevelingManager(),
                 new Managers.LegacyManager(),
                 new Managers.ExpertiseManager(),
                 new Managers.FamiliarManager(),
@@ -1035,7 +1035,7 @@ internal class CanvasService
         {
             string header = "";
 
-            if (element.Equals(Element.Experience))
+            if (element.Equals(Element.Leveling))
             {
                 header = $"{element} {IntegerToRoman(prestiges)}";
             }
@@ -1141,7 +1141,7 @@ internal class CanvasService
         {
             if (_weaponStatValues.TryGetValue(weaponStat, out float statValue))
             {
-                float classMultiplier = ClassSynergy(weaponStat, ExperienceState.Class, _classStatSynergies);
+                float classMultiplier = ClassSynergy(weaponStat, LevelingState.Class, _classStatSynergies);
                 statValue *= (1 + _prestigeStatMultiplier * _expertisePrestige) * classMultiplier * ((float)_expertiseLevel / _expertiseMaxLevel);
                 float displayStatValue = statValue;
                 int statModificationId = ModificationIds.GenerateId(0, (int)weaponStat, statValue);
@@ -1186,7 +1186,7 @@ internal class CanvasService
         {
             if (_bloodStatValues.TryGetValue(bloodStat, out float statValue))
             {
-                float classMultiplier = ClassSynergy(bloodStat, ExperienceState.Class, _classStatSynergies);
+                float classMultiplier = ClassSynergy(bloodStat, LevelingState.Class, _classStatSynergies);
                 statValue *= (1 + _prestigeStatMultiplier * LegacyState.Prestige) * classMultiplier * ((float)LegacyState.Level / LegacyState.MaxLevel);
                 string displayString = $"<color=#00FFFF>{BloodStatTypeAbbreviations[bloodStat]}</color>: <color=#90EE90>{(statValue * 100).ToString("F0") + "%"}</color>";
 
@@ -1719,15 +1719,15 @@ internal class CanvasService
     {
         switch (element)
         {
-            case Element.Experience:
-                ConfigureExperiencePanel(ref informationPanelObject, ref firstText, ref secondText, ref thirdText);
+            case Element.Leveling:
+                ConfigureLevelingPanel(ref informationPanelObject, ref firstText, ref secondText, ref thirdText);
                 break;
             default:
                 ConfigureDefaultPanel(ref informationPanelObject, ref firstText, ref secondText, ref thirdText);
                 break;
         }
     }
-    static void ConfigureExperiencePanel(ref GameObject panel, ref LocalizedText firstText, ref LocalizedText secondText, 
+    static void ConfigureLevelingPanel(ref GameObject panel, ref LocalizedText firstText, ref LocalizedText secondText,
         ref LocalizedText thirdText)
     {
         RectTransform panelTransform = panel.GetComponent<RectTransform>();

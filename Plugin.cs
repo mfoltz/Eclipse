@@ -61,8 +61,8 @@ internal class Plugin : BasePlugin
         }
         */
 
-        _leveling = InitConfigEntry("UIOptions", "ExperienceBar", true, "Enable/Disable the experience bar, requires both ClientCompanion/LevelingSystem to be enabled in Bloodcraft.");
-        _prestige = InitConfigEntry("UIOptions", "ShowPrestige", true, "Enable/Disable showing prestige level in front of experience bar, requires both ClientCompanion/PrestigeSystem to be enabled in Bloodcraft.");
+        _leveling = InitConfigEntry("UIOptions", "ExperienceBar", true, "Enable/Disable the leveling bar, requires both ClientCompanion/LevelingSystem to be enabled in Bloodcraft.");
+        _prestige = InitConfigEntry("UIOptions", "ShowPrestige", true, "Enable/Disable showing prestige level in front of the leveling bar, requires both ClientCompanion/PrestigeSystem to be enabled in Bloodcraft.");
         _legacies = InitConfigEntry("UIOptions", "LegacyBar", true, "Enable/Disable the legacy bar, requires both ClientCompanion/BloodSystem to be enabled in Bloodcraft.");
         _expertise = InitConfigEntry("UIOptions", "ExpertiseBar", true, "Enable/Disable the expertise bar, requires both ClientCompanion/ExpertiseSystem to be enabled in Bloodcraft.");
 

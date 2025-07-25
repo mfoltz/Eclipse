@@ -42,7 +42,7 @@
 - removed unneeded dependency like I meant to for 1.1.1, oopsie
 
 `1.1.1`
-- class text under experience bar formatted more aesthetically
+- class text under leveling bar formatted more aesthetically
 - improved positioning for UI elements at various resolutions (probably >_>)
 
 `1.0.0`

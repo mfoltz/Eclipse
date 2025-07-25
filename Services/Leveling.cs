@@ -6,9 +6,9 @@ using Eclipse.States;
 
 namespace Eclipse.Services;
 
-internal class Experience : IReactiveElement
+internal class Leveling : IReactiveElement
 {
-    readonly ExperienceState _state;
+    readonly LevelingState _state;
     GameObject _barGameObject;
     GameObject _informationPanel;
     LocalizedText _header;
@@ -18,17 +18,17 @@ internal class Experience : IReactiveElement
     LocalizedText _secondText;
     Image _fill;
 
-    public Experience(ExperienceState state)
+    public Leveling(LevelingState state)
     {
         _state = state;
     }
 
     public void Awake()
     {
-        if (CanvasService.ExperienceEnabled)
+        if (CanvasService.LevelingEnabled)
         {
             CanvasService.ConfigureHorizontalProgressBar(ref _barGameObject, ref _informationPanel,
-                ref _fill, ref _text, ref _header, CanvasService.Element.Experience, Color.green,
+                ref _fill, ref _text, ref _header, CanvasService.Element.Leveling, Color.green,
                 ref _firstText, ref _classText, ref _secondText);
         }
     }
@@ -37,11 +37,11 @@ internal class Experience : IReactiveElement
     {
         while (true)
         {
-            if (CanvasService.ExperienceEnabled)
+            if (CanvasService.LevelingEnabled)
             {
                 CanvasService.UpdateBar(_state.Progress, _state.Level,
                     _state.MaxLevel, _state.Prestige,
-                    _text, _header, _fill, CanvasService.Element.Experience);
+                    _text, _header, _fill, CanvasService.Element.Leveling);
                 CanvasService.UpdateClass(_state.Class, _classText);
             }
             yield return CanvasService.Delay;
