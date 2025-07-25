@@ -547,11 +547,11 @@ internal static class DataService
 
     public static void ApplyPlayerDto(PlayerDataDto dto)
     {
-        var exp = dto.Experience;
-        Experience.Progress = exp.Progress;
-        Experience.Level = exp.Level;
-        Experience.Prestige = exp.Prestige;
-        Experience.Class = exp.Class;
+        var leveling = dto.Leveling;
+        Leveling.Progress = leveling.Progress;
+        Leveling.Level = leveling.Level;
+        Leveling.Prestige = leveling.Prestige;
+        Leveling.Class = leveling.Class;
 
         var legacies = dto.Legacy;
         Legacy.Progress = legacies.Progress;

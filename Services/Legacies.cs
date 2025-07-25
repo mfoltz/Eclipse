@@ -26,7 +26,7 @@ internal class Legacies : IReactiveElement
 
     public void Awake()
     {
-        if (CanvasService.LegacyEnabled)
+        if (CanvasService.LegaciesEnabled)
         {
             CanvasService.ConfigureHorizontalProgressBar(ref _barGameObject, ref _informationPanel,
                 ref _fill, ref _text, ref _header, CanvasService.Element.Legacy, Color.red,
@@ -38,7 +38,7 @@ internal class Legacies : IReactiveElement
     {
         while (true)
         {
-            if (CanvasService.LegacyEnabled)
+            if (CanvasService.LegaciesEnabled)
             {
                 CanvasService.UpdateBar(_state.Progress, _state.Level,
                     _state.MaxLevel, _state.Prestige,
