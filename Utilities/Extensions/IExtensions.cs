@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-
 namespace Eclipse.Utilities.Extensions;
 
-internal static class CollectionExtensions
+internal static class IExtensions
 {
     public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
     {

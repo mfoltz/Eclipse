@@ -1,14 +1,16 @@
 using ProjectM;
 using ProjectM.UI;
+using Stunlock.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Eclipse.States;
 
 internal class ShiftSlotState
 {
     internal PrefabGUID AbilityGroupPrefabGuid { get; set; }
-    internal AbilityTooltipData? AbilityTooltipData { get; set; }
+    internal AbilityTooltipData AbilityTooltipData { get; set; }
 
     internal GameObject AbilityDummyObject { get; set; }
     internal AbilityBarEntry AbilityBarEntry { get; set; }

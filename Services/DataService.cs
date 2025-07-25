@@ -14,7 +14,7 @@ internal static class DataService
     public static void UseJsonParser() => Parser = new JsonDataParser();
     public static void UseLegacyParser() => Parser = new LegacyDataParser();
 
-    internal static ExperienceState Experience { get; } = new();
+    internal static LevelingState Leveling { get; } = new();
     internal static LegacyState Legacy { get; } = new();
     internal static ExpertiseState Expertise { get; } = new();
     internal static FamiliarState Familiar { get; } = new();
@@ -159,21 +159,21 @@ internal static class DataService
     };
 
     public static Dictionary<BloodStatType, float> _bloodStatValues = [];
-    public enum BloodStatType 
+    public enum BloodStatType
     {
         None,
-        HealingReceived, 
-        DamageReduction, 
-        PhysicalResistance, 
-        SpellResistance, 
+        HealingReceived,
+        DamageReduction,
+        PhysicalResistance,
+        SpellResistance,
         ResourceYield,
         ReducedBloodDrain,
         SpellCooldownRecoveryRate,
         WeaponCooldownRecoveryRate,
         UltimateCooldownRecoveryRate,
-        MinionDamage, 
-        AbilityAttackSpeed, 
-        CorruptionDamageReduction 
+        MinionDamage,
+        AbilityAttackSpeed,
+        CorruptionDamageReduction
     }
 
     public static readonly Dictionary<BloodStatType, string> BloodStatTypeAbbreviations = new()
@@ -423,10 +423,10 @@ internal static class DataService
             _prestigeStatMultiplier = parsedConfigData.PrestigeStatMultiplier;
             _classStatMultiplier = parsedConfigData.ClassStatMultiplier;
 
-            Experience.MaxLevel = parsedConfigData.MaxPlayerLevel;
+            Leveling.MaxLevel = parsedConfigData.MaxPlayerLevel;
             Legacy.MaxLevel = parsedConfigData.MaxLegacyLevel;
-            _expertiseMaxLevel = parsedConfigData.MaxExpertiseLevel;
-            _familiarMaxLevel = parsedConfigData.MaxFamiliarLevel;
+            Expertise.MaxLevel = parsedConfigData.MaxExpertiseLevel;
+            Familiar.MaxLevel = parsedConfigData.MaxFamiliarLevel;
 
             _reservedFlags = parsedConfigData.ReservedFlags;
             // Core.Log.LogWarning($"Flags: {_reservedFlags}");
@@ -465,10 +465,10 @@ internal static class DataService
         QuestData dailyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
         QuestData weeklyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
 
-        Experience.Progress = experienceData.Progress;
-        Experience.Level = experienceData.Level;
-        Experience.Prestige = experienceData.Prestige;
-        Experience.Class = experienceData.Class;
+        Leveling.Progress = experienceData.Progress;
+        Leveling.Level = experienceData.Level;
+        Leveling.Prestige = experienceData.Prestige;
+        Leveling.Class = experienceData.Class;
 
         Legacy.Progress = legacyData.Progress;
         Legacy.Level = legacyData.Level;
@@ -524,16 +524,17 @@ internal static class DataService
     {
         _prestigeStatMultiplier = dto.PrestigeStatMultiplier;
         _classStatMultiplier = dto.ClassStatMultiplier;
-        Experience.MaxLevel = dto.MaxPlayerLevel;
+        Leveling.MaxLevel = dto.MaxPlayerLevel;
         Legacy.MaxLevel = dto.MaxLegacyLevel;
-        _expertiseMaxLevel = dto.MaxExpertiseLevel;
-        _familiarMaxLevel = dto.MaxFamiliarLevel;
+        Expertise.MaxLevel = dto.MaxExpertiseLevel;
+        Familiar.MaxLevel = dto.MaxFamiliarLevel;
         _reservedFlags = (ReservedFlags)dto.ReservedFlags;
         _extraRecipes = dto.ExtraRecipes;
         _primalCost = new(dto.PrimalCost);
         _weaponStatValues = dto.WeaponStatValues;
         _bloodStatValues = dto.BloodStatValues;
         _classStatSynergies = dto.ClassStatSynergies.ToDictionary(k => k.Key, v => (v.Value.WeaponStats, v.Value.BloodStats));
+
         try
         {
             if (_extraRecipes) Recipes.ModifyRecipes();
@@ -546,50 +547,50 @@ internal static class DataService
 
     public static void ApplyPlayerDto(PlayerDataDto dto)
     {
-        var exp = dto.Experience;
-        Experience.Progress = exp.Progress;
-        Experience.Level = exp.Level;
-        Experience.Prestige = exp.Prestige;
-        Experience.Class = exp.Class;
+        var leveling = dto.Experience;
+        Leveling.Progress = leveling.Progress;
+        Leveling.Level = leveling.Level;
+        Leveling.Prestige = leveling.Prestige;
+        Leveling.Class = leveling.Class;
 
-        var leg = dto.Legacy;
-        Legacy.Progress = leg.Progress;
-        Legacy.Level = leg.Level;
-        Legacy.Prestige = leg.Prestige;
-        Legacy.LegacyType = leg.LegacyType;
-        Legacy.BonusStats = leg.BonusStats;
+        var legacies = dto.Legacy;
+        Legacy.Progress = legacies.Progress;
+        Legacy.Level = legacies.Level;
+        Legacy.Prestige = legacies.Prestige;
+        Legacy.LegacyType = legacies.LegacyType;
+        Legacy.BonusStats = legacies.BonusStats;
 
-        var ex2 = dto.Expertise;
-        Expertise.Progress = ex2.Progress;
-        Expertise.Level = ex2.Level;
-        Expertise.Prestige = ex2.Prestige;
-        Expertise.ExpertiseType = ex2.ExpertiseType;
-        Expertise.BonusStats = ex2.BonusStats;
+        var expertise = dto.Expertise;
+        Expertise.Progress = expertise.Progress;
+        Expertise.Level = expertise.Level;
+        Expertise.Prestige = expertise.Prestige;
+        Expertise.ExpertiseType = expertise.ExpertiseType;
+        Expertise.BonusStats = expertise.BonusStats;
 
-        var fam = dto.Familiar;
-        Familiar.Progress = fam.Progress;
-        Familiar.Level = fam.Level;
-        Familiar.Prestige = fam.Prestige;
-        Familiar.Name = fam.FamiliarName;
-        Familiar.Stats = fam.FamiliarStats;
+        var familiar = dto.Familiar;
+        Familiar.Progress = familiar.Progress;
+        Familiar.Level = familiar.Level;
+        Familiar.Prestige = familiar.Prestige;
+        Familiar.Name = familiar.FamiliarName;
+        Familiar.Stats = familiar.FamiliarStats;
 
-        var prof = dto.Professions;
-        Professions.EnchantingProgress = prof.EnchantingProgress;
-        Professions.EnchantingLevel = prof.EnchantingLevel;
-        Professions.AlchemyProgress = prof.AlchemyProgress;
-        Professions.AlchemyLevel = prof.AlchemyLevel;
-        Professions.HarvestingProgress = prof.HarvestingProgress;
-        Professions.HarvestingLevel = prof.HarvestingLevel;
-        Professions.BlacksmithingProgress = prof.BlacksmithingProgress;
-        Professions.BlacksmithingLevel = prof.BlacksmithingLevel;
-        Professions.TailoringProgress = prof.TailoringProgress;
-        Professions.TailoringLevel = prof.TailoringLevel;
-        Professions.WoodcuttingProgress = prof.WoodcuttingProgress;
-        Professions.WoodcuttingLevel = prof.WoodcuttingLevel;
-        Professions.MiningProgress = prof.MiningProgress;
-        Professions.MiningLevel = prof.MiningLevel;
-        Professions.FishingProgress = prof.FishingProgress;
-        Professions.FishingLevel = prof.FishingLevel;
+        var profession = dto.Professions;
+        Professions.EnchantingProgress = profession.EnchantingProgress;
+        Professions.EnchantingLevel = profession.EnchantingLevel;
+        Professions.AlchemyProgress = profession.AlchemyProgress;
+        Professions.AlchemyLevel = profession.AlchemyLevel;
+        Professions.HarvestingProgress = profession.HarvestingProgress;
+        Professions.HarvestingLevel = profession.HarvestingLevel;
+        Professions.BlacksmithingProgress = profession.BlacksmithingProgress;
+        Professions.BlacksmithingLevel = profession.BlacksmithingLevel;
+        Professions.TailoringProgress = profession.TailoringProgress;
+        Professions.TailoringLevel = profession.TailoringLevel;
+        Professions.WoodcuttingProgress = profession.WoodcuttingProgress;
+        Professions.WoodcuttingLevel = profession.WoodcuttingLevel;
+        Professions.MiningProgress = profession.MiningProgress;
+        Professions.MiningLevel = profession.MiningLevel;
+        Professions.FishingProgress = profession.FishingProgress;
+        Professions.FishingLevel = profession.FishingLevel;
 
         var daily = dto.DailyQuest;
         Quests.DailyTargetType = daily.TargetType;
@@ -607,20 +608,4 @@ internal static class DataService
 
         ShiftSlot.ShiftSpellIndex = dto.ShiftSpellIndex;
     }
-
-
-    /*
-    public static WeaponType GetWeaponTypeFromWeaponEntity(Entity weaponEntity)
-    {
-        if (weaponEntity == Entity.Null) return WeaponType.Unarmed;
-        string weaponCheck = weaponEntity.Read<PrefabGUID>().GetPrefabName();
-
-        return Enum.GetValues(typeof(WeaponType))
-            .Cast<WeaponType>()
-            .FirstOrDefault(type =>
-            weaponCheck.Contains(type.ToString(), StringComparison.OrdinalIgnoreCase) &&
-            !(type == WeaponType.Sword && weaponCheck.Contains("GreatSword", StringComparison.OrdinalIgnoreCase))
-            );
-    }
-    */
 }

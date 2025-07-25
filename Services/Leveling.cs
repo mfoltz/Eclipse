@@ -6,9 +6,9 @@ using Eclipse.States;
 
 namespace Eclipse.Services;
 
-internal class Experience : IReactiveElement
+internal class Leveling : IReactiveElement
 {
-    readonly ExperienceState _state;
+    readonly LevelingState _state;
     GameObject _barGameObject;
     GameObject _informationPanel;
     LocalizedText _header;
@@ -18,7 +18,7 @@ internal class Experience : IReactiveElement
     LocalizedText _secondText;
     Image _fill;
 
-    public Experience(ExperienceState state)
+    public Leveling(LevelingState state)
     {
         _state = state;
     }

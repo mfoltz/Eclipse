@@ -1,4 +1,4 @@
-## 🟩 Environment & Dependency Awareness
+## Environment & Dependency Awareness
 
 * **Write for the actual build environment:**  
   Assume code will be compiled in Visual Studio (or the team’s IDE) with all dependencies and references as specified in the project’s `.csproj` or package manager.
@@ -7,7 +7,7 @@
 
 ---
 
-## 🟦 Strong Typing & Domain Modeling
+## Strong Typing & Domain Modeling
 
 * **Favor classes and structs over loose data structures:**  
   Organize related data and behavior into well-defined types rather than scattering logic in dictionaries or primitive value collections.
@@ -18,7 +18,7 @@
 
 ---
 
-## 🟩 “Should Compile” Mindset
+## “Should Compile” Mindset
 
 * **Think like the compiler:**  
   Before reviewing logic or style, ensure code would build successfully with available dependencies.  
@@ -28,7 +28,7 @@
 
 ---
 
-## 🟦 Core C# Patterns & Knowledge
+## Patterns & Knowledge
 
 * **Interfaces & Abstraction:**  
   Define clear contracts with interfaces; use interface segregation for narrow-focus responsibilities. ([submain.com](https://blog.submain.com/c-interface-definition-examples/) :contentReference[oaicite:2]{index=2})
@@ -41,7 +41,7 @@
 
 ---
 
-## 🟦 C# Design & Readability Practices
+## Design & Readability
 
 * **Naming & Formatting:**  
   Use PascalCase for types/members, camelCase for locals/params, and ALL_CAPS for constants. Apply consistent braces, indenting, and file layout. ([Microsoft Docs](https://learn.microsoft.com) :contentReference[oaicite:7]{index=7}; [dev.to](https://dev.to) :contentReference[oaicite:8]{index=8})
@@ -54,7 +54,7 @@
 
 ---
 
-## 🟦 Continuous Quality & Learning
+## Quality & Continuous Learning
 
 * **Unit Testing & DI:**  
   Use dependency injection and interfaces to support testable code. Write unit tests with xUnit, NUnit, or MSTest. ([Code Maze](https://code-maze.com) :contentReference[oaicite:12]{index=12})
@@ -64,5 +64,11 @@
   Regularly revisit and refactor code to avoid tech debt and improve maintainability. ([Wikipedia](https://en.wikipedia.org) :contentReference[oaicite:14]{index=14})
 * **Stay Updated:**  
   Track modern C# developments (C# 13), .NET releases, and follow trusted sources (.NET blog, Microsoft Docs, Code Maze). ([dev.to](https://dev.to) :contentReference[oaicite:15]{index=15})
+
+---
+
+## Specific Do's and Don'ts
+  
+- Do not touch or otherwise make edits to CHANGELOG.md if found or otherwise seen; do please provide succinct and relevant task reports separately as usual, versioning and other such edits involving the CHANGELOG.md or othertwise should generally be left solely to the human developer for now.
 
 ---

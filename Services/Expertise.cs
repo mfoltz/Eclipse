@@ -38,7 +38,7 @@ internal class Expertise : IReactiveElement
                     _text, _header, _fill, CanvasService.Element.Expertise, CanvasService._expertiseType);
                 CanvasService.UpdateWeaponStats(CanvasService._expertiseBonusStats,
                     new List<LocalizedText> { _firstStat, _secondStat, _thirdStat }, CanvasService.GetWeaponStatInfo);
-                CanvasService.GetAndUpdateWeaponStatBuffer(CanvasService.LocalCharacter);
+                CanvasService.GetAndUpdateWeaponStatBuffer(Core.LocalCharacter);
             }
             yield return CanvasService.Delay;
         }

@@ -5,16 +5,15 @@ using ProjectM.Gameplay.Systems;
 using ProjectM.Network;
 using ProjectM.Scripting;
 using ProjectM.Shared;
-using System.Collections;
+using Stunlock.Core;
 using System.Runtime.InteropServices;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Eclipse.Utilities.Extensions;
 
-internal static class EntityExtensions
+internal static class VExtensions
 {
     static EntityManager EntityManager => Core.EntityManager;
     static ClientGameManager ClientGameManager => Core.ClientGameManager;

@@ -1,11 +1,12 @@
 using ProjectM;
+using Stunlock.Core;
 using System.Collections;
 using UnityEngine;
 using static Eclipse.Services.LocalizationService;
 
 namespace Eclipse.Utilities.Extensions;
 
-internal static class UiExtensions
+internal static class UExtensions
 {
     const string EMPTY_KEY = "LocalizationKey.Empty";
 

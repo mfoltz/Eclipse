@@ -7,7 +7,7 @@ namespace Eclipse.Patches;
 internal static class InputActionSystemPatch
 {
     public static bool IsGamepad => _isGamepad;
-    static bool _isGamepad = false; 
+    static bool _isGamepad = false;
 
     [HarmonyPatch(typeof(InputActionSystem), nameof(InputActionSystem.OnUpdate))]
     [HarmonyPostfix]

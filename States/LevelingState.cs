@@ -2,7 +2,7 @@ using Eclipse.Services;
 
 namespace Eclipse.States;
 
-internal class ExperienceState
+internal class LevelingState
 {
     internal float Progress { get; set; }
     internal int Level { get; set; }

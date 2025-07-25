@@ -1,8 +1,8 @@
-using System.Collections;
 using Eclipse.Utilities.Extensions;
 using ProjectM;
+using Stunlock.Core;
+using System.Collections;
 using Unity.Entities;
-using UnityEngine;
 
 namespace Eclipse.Services;
 
@@ -47,6 +47,7 @@ internal class ShiftSlot : IReactiveElement
                     if (abilityGroupEntity.TryGetComponent(out AbilityGroupState abilityGroupState) && abilityGroupState.SlotIndex == 3)
                     {
                         PrefabGUID currentPrefabGUID = abilityGroupEntity.GetPrefabGUID();
+
                         if (CanvasService.TryUpdateTooltipData(abilityGroupEntity, currentPrefabGUID))
                         {
                             CanvasService.UpdateAbilityData(CanvasService._abilityTooltipData, abilityGroupEntity, abilityCastEntity, currentPrefabGUID);

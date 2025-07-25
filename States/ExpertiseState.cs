@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Eclipse.States;
 
 internal class ExpertiseState
