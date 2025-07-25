@@ -271,19 +271,19 @@ internal static class DataService
         public float FishingProgress { get; set; } = float.Parse(fishingProgress, CultureInfo.InvariantCulture) / 100f;
         public int FishingLevel { get; set; } = int.Parse(fishingLevel, CultureInfo.InvariantCulture);
     }
-    public class ExperienceData(string percent, string level, string prestige, string playerClass)
+    public class LevelingData(string percent, string level, string prestige, string playerClass)
     {
         public float Progress { get; set; } = float.Parse(percent, CultureInfo.InvariantCulture) / 100f;
         public int Level { get; set; } = int.Parse(level, CultureInfo.InvariantCulture);
         public int Prestige { get; set; } = int.Parse(prestige, CultureInfo.InvariantCulture);
         public PlayerClass Class { get; set; } = (PlayerClass)int.Parse(playerClass, CultureInfo.InvariantCulture);
     }
-    public class LegacyData(string percent, string level, string prestige, string legacyType, string bonusStats) : ExperienceData(percent, level, prestige, legacyType)
+    public class LegacyData(string percent, string level, string prestige, string legacyType, string bonusStats) : LevelingData(percent, level, prestige, legacyType)
     {
         public string LegacyType { get; set; } = ((BloodType)int.Parse(legacyType, CultureInfo.InvariantCulture)).ToString();
         public List<string> BonusStats { get; set; } = [..Enumerable.Range(0, bonusStats.Length / 2).Select(i => ((BloodStatType)int.Parse(bonusStats.Substring(i * 2, 2), CultureInfo.InvariantCulture)).ToString())];
     }
-    public class ExpertiseData(string percent, string level, string prestige, string expertiseType, string bonusStats) : ExperienceData(percent, level, prestige, expertiseType)
+    public class ExpertiseData(string percent, string level, string prestige, string expertiseType, string bonusStats) : LevelingData(percent, level, prestige, expertiseType)
     {
         public string ExpertiseType { get; set; } = ((WeaponType)int.Parse(expertiseType)).ToString();
         public List<string> BonusStats { get; set; } = [..Enumerable.Range(0, bonusStats.Length / 2).Select(i => ((WeaponStatType)int.Parse(bonusStats.Substring(i * 2, 2), CultureInfo.InvariantCulture)).ToString())];
@@ -457,7 +457,7 @@ internal static class DataService
     {
         int index = 0;
 
-        ExperienceData experienceData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+        LevelingData levelingData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
         LegacyData legacyData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
         ExpertiseData expertiseData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
         FamiliarData familiarData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
@@ -465,10 +465,10 @@ internal static class DataService
         QuestData dailyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
         QuestData weeklyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
 
-        Leveling.Progress = experienceData.Progress;
-        Leveling.Level = experienceData.Level;
-        Leveling.Prestige = experienceData.Prestige;
-        Leveling.Class = experienceData.Class;
+        Leveling.Progress = levelingData.Progress;
+        Leveling.Level = levelingData.Level;
+        Leveling.Prestige = levelingData.Prestige;
+        Leveling.Class = levelingData.Class;
 
         Legacy.Progress = legacyData.Progress;
         Legacy.Level = legacyData.Level;
@@ -547,11 +547,11 @@ internal static class DataService
 
     public static void ApplyPlayerDto(PlayerDataDto dto)
     {
-        var leveling = dto.Experience;
-        Leveling.Progress = leveling.Progress;
-        Leveling.Level = leveling.Level;
-        Leveling.Prestige = leveling.Prestige;
-        Leveling.Class = leveling.Class;
+        var exp = dto.Experience;
+        Experience.Progress = exp.Progress;
+        Experience.Level = exp.Level;
+        Experience.Prestige = exp.Prestige;
+        Experience.Class = exp.Class;
 
         var legacies = dto.Legacy;
         Legacy.Progress = legacies.Progress;

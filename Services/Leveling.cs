@@ -25,10 +25,10 @@ internal class Leveling : IReactiveElement
 
     public void Awake()
     {
-        if (CanvasService.ExperienceEnabled)
+        if (CanvasService.LevelingEnabled)
         {
             CanvasService.ConfigureHorizontalProgressBar(ref _barGameObject, ref _informationPanel,
-                ref _fill, ref _text, ref _header, CanvasService.Element.Experience, Color.green,
+                ref _fill, ref _text, ref _header, CanvasService.Element.Leveling, Color.green,
                 ref _firstText, ref _classText, ref _secondText);
         }
     }
@@ -37,11 +37,11 @@ internal class Leveling : IReactiveElement
     {
         while (true)
         {
-            if (CanvasService.ExperienceEnabled)
+            if (CanvasService.LevelingEnabled)
             {
                 CanvasService.UpdateBar(_state.Progress, _state.Level,
                     _state.MaxLevel, _state.Prestige,
-                    _text, _header, _fill, CanvasService.Element.Experience);
+                    _text, _header, _fill, CanvasService.Element.Leveling);
                 CanvasService.UpdateClass(_state.Class, _classText);
             }
             yield return CanvasService.Delay;

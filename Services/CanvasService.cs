@@ -27,19 +27,21 @@ internal class CanvasService
     static EntityManager EntityManager => Core.EntityManager;
     static SystemService SystemService => Core.SystemService;
     static ManagedDataRegistry ManagedDataRegistry => SystemService.ManagedDataSystem.ManagedDataRegistry;
+    static Entity LocalCharacter => Core.LocalCharacter;
+
+    static readonly bool _levelingBar = Plugin.Leveling;
     static readonly bool _showPrestige = Plugin.Prestige;
 
-    public static bool ExperienceEnabled { get; } = Plugin.Leveling;
-    public static bool LegacyEnabled { get; } = Plugin.Legacies;
-    public static bool ExpertiseEnabled { get; } = Plugin.Expertise;
-    public static bool FamiliarEnabled { get; } = Plugin.Familiars;
-    public static bool ProfessionsEnabled { get; } = Plugin.Professions;
-    public static bool QuestsEnabled { get; } = Plugin.Quests;
-    public static bool ShiftSlotEnabled { get; } = Plugin.ShiftSlot;
-
+    public static bool ExperienceEnabled => _experienceBar;
+    public static bool LegacyEnabled => _legacyBar;
+    public static bool ExpertiseEnabled => _expertiseBar;
+    public static bool FamiliarEnabled => _familiarBar;
+    public static bool ProfessionsEnabled => _professionBars;
+    public static bool QuestsEnabled => _questTracker;
+    public static bool ShiftSlotEnabled => _shiftSlot;
     public enum Element
     {
-        Experience,
+        Leveling,
         Legacy,
         Expertise,
         Familiars,
@@ -151,7 +153,7 @@ internal class CanvasService
     static Canvas _targetInfoPanelCanvas;
     public static string _version = string.Empty;
 
-    internal static LevelingState ExperienceState => DataService.Leveling;
+    internal static ExperienceState ExperienceState => DataService.Experience;
     internal static LegacyState LegacyState => DataService.Legacy;
 
     public static string _expertiseType;
@@ -262,7 +264,7 @@ internal class CanvasService
     static readonly Dictionary<GameObject, bool> _elementStates = [];
     static readonly List<GameObject> _professionElements = [];
 
-    internal static Leveling Experience { get; private set; }
+    internal static Experience Experience { get; private set; }
     internal static Legacies Legacies { get; private set; }
     internal static Professions Professions { get; private set; }
     internal static Expertise Expertise { get; private set; }
@@ -280,7 +282,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, Action> _abilitySlotToggles = new()
     {
-        {Element.Experience, () => Experience?.Toggle()},
+        {Element.Leveling, () => Leveling?.Toggle()},
         {Element.Legacy, () => Legacies?.Toggle()},
         {Element.Expertise, () => Expertise?.Toggle()},
         {Element.Familiars, () => Familiar?.Toggle()},
@@ -292,7 +294,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, string> _abilitySlotPaths = new()
     {
-        { Element.Experience, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Primary/" },
+        { Element.Leveling, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Primary/" },
         { Element.Legacy, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_WeaponSkill1/" },
         { Element.Expertise, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_WeaponSkill2/" },
         { Element.Familiars, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Travel/" },
@@ -303,14 +305,14 @@ internal class CanvasService
 
     static readonly Dictionary<Element, bool> _activeElements = new()
     {
-        { Element.Experience, ExperienceEnabled },
-        { Element.Legacy, LegacyEnabled },
-        { Element.Expertise, ExpertiseEnabled },
-        { Element.Familiars, FamiliarEnabled },
-        { Element.Professions, ProfessionsEnabled },
-        { Element.Daily, QuestsEnabled },
-        { Element.Weekly, QuestsEnabled },
-        { Element.ShiftSlot, ShiftSlotEnabled }
+        { Element.Experience, _experienceBar },
+        { Element.Legacy, _legacyBar },
+        { Element.Expertise, _expertiseBar },
+        { Element.Familiars, _familiarBar },
+        { Element.Professions, _professionBars },
+        { Element.Daily, _questTracker },
+        { Element.Weekly, _questTracker },
+        { Element.ShiftSlot, _shiftSlot }
     };
 
     const string FISHING = "Go Fish!";
@@ -349,7 +351,17 @@ internal class CanvasService
 
         try
         {
-            Experience = new Leveling(DataService.Leveling);
+            InitializeAttributeValues();
+        }
+        catch (Exception ex)
+        {
+            Core.Log.LogError($"[InitializeAttributeValues]: {ex}");
+        }
+        */
+
+        try
+        {
+            Experience = new Experience(DataService.Experience);
             Legacies = new Legacies(DataService.Legacy);
             Professions = new Professions();
             Expertise = new Expertise();
@@ -357,8 +369,8 @@ internal class CanvasService
             Quests = new Quests();
             ShiftSlot = new ShiftSlot();
 
-            _managers.AddRange(
-            [
+            _managers.AddRange(new IReactiveElement[]
+            {
                 new Managers.ExperienceManager(),
                 new Managers.LegacyManager(),
                 new Managers.ExpertiseManager(),
@@ -931,7 +943,7 @@ internal class CanvasService
         {
             string header = "";
 
-            if (element.Equals(Element.Experience))
+            if (element.Equals(Element.Leveling))
             {
                 header = $"{element} {IntegerToRoman(prestiges)}";
             }
@@ -1038,7 +1050,7 @@ internal class CanvasService
             if (_weaponStatValues.TryGetValue(weaponStat, out float statValue))
             {
                 float classMultiplier = ClassSynergy(weaponStat, ExperienceState.Class, _classStatSynergies);
-                statValue *= (1 + (_prestigeStatMultiplier * _expertisePrestige)) * classMultiplier * ((float)_expertiseLevel / _expertiseMaxLevel);
+                statValue *= (1 + _prestigeStatMultiplier * _expertisePrestige) * classMultiplier * ((float)_expertiseLevel / _expertiseMaxLevel);
                 float displayStatValue = statValue;
                 int statModificationId = ModificationIds.GenerateId(0, (int)weaponStat, statValue);
 
@@ -1083,7 +1095,7 @@ internal class CanvasService
             if (_bloodStatValues.TryGetValue(bloodStat, out float statValue))
             {
                 float classMultiplier = ClassSynergy(bloodStat, ExperienceState.Class, _classStatSynergies);
-                statValue *= (1 + (_prestigeStatMultiplier * LegacyState.Prestige)) * classMultiplier * ((float)LegacyState.Level / LegacyState.MaxLevel);
+                statValue *= (1 + _prestigeStatMultiplier * LegacyState.Prestige) * classMultiplier * ((float)LegacyState.Level / LegacyState.MaxLevel);
                 string displayString = $"<color=#00FFFF>{BloodStatTypeAbbreviations[bloodStat]}</color>: <color=#90EE90>{(statValue * 100).ToString("F0") + "%"}</color>";
 
                 int statModificationId = ModificationIds.GenerateId(1, (int)bloodStat, statValue);
@@ -1615,15 +1627,15 @@ internal class CanvasService
     {
         switch (element)
         {
-            case Element.Experience:
-                ConfigureExperiencePanel(ref informationPanelObject, ref firstText, ref secondText, ref thirdText);
+            case Element.Leveling:
+                ConfigureLevelingPanel(ref informationPanelObject, ref firstText, ref secondText, ref thirdText);
                 break;
             default:
                 ConfigureDefaultPanel(ref informationPanelObject, ref firstText, ref secondText, ref thirdText);
                 break;
         }
     }
-    static void ConfigureExperiencePanel(ref GameObject panel, ref LocalizedText firstText, ref LocalizedText secondText,
+    static void ConfigureExperiencePanel(ref GameObject panel, ref LocalizedText firstText, ref LocalizedText secondText, 
         ref LocalizedText thirdText)
     {
         RectTransform panelTransform = panel.GetComponent<RectTransform>();
