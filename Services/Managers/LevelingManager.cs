@@ -2,16 +2,16 @@ using System.Collections;
 
 namespace Eclipse.Services.Managers;
 
-internal class ExperienceManager : IReactiveElement
+internal class LevelingManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.Experience?.Awake();
+        CanvasService.Leveling?.Awake();
     }
 
     public IEnumerator OnUpdate()
     {
-        return CanvasService.Experience?.OnUpdate() ?? Dummy();
+        return CanvasService.Leveling?.OnUpdate() ?? Dummy();
 
         static IEnumerator Dummy()
         {

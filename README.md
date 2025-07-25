@@ -22,8 +22,8 @@ Jairon O.; Odjit; Jera; Kokuren TCG and Gaming Shop; Rexxn; Eduardo G.; DirtyMik
 
 ### UIOptions
 
-- **Experience Bar**: `ExperienceBar` (bool, default: true)  
-  Enable or disable the experience bar.
+- **Leveling Bar**: `ExperienceBar` (bool, default: true)
+  Enable or disable the leveling bar.
 - **Show Prestige**: `ShowPrestige` (bool, default: true)  
   Enable or disable showing prestige levels.
 - **Legacy Bar**: `LegacyBar` (bool, default: true)  
