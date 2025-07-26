@@ -1,6 +1,7 @@
 ﻿using Bloodcraft.Resources;
+using Eclipse.Elements;
+using Eclipse.Elements.States;
 using Eclipse.Patches;
-using Eclipse.States;
 using Eclipse.Utilities;
 using Eclipse.Utilities.Extensions;
 using Il2CppInterop.Runtime;
@@ -364,7 +365,7 @@ internal class CanvasService
                 new Managers.FamiliarManager(),
                 new Managers.ProfessionManager(),
                 new Managers.QuestManager(),
-                new Managers.ShiftSlotManager()
+                new Managers.ShiftManager()
             ]);
 
             foreach (var manager in _managers)
@@ -1753,7 +1754,7 @@ internal class CanvasService
 
         return name;
     }
-    public static void ResetState()
+    public static void ResetStates()
     {
         foreach (var coroutine in _managerCoroutines)
         {

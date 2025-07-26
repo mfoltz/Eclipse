@@ -2,9 +2,10 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using ProjectM.UI;
-using Eclipse.States;
+using Eclipse.Elements.States;
+using Eclipse.Services;
 
-namespace Eclipse.Services;
+namespace Eclipse.Elements;
 
 internal class Leveling : IReactiveElement
 {

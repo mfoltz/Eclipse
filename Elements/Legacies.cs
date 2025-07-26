@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using ProjectM.UI;
-using Eclipse.States;
+using Eclipse.Elements.States;
+using Eclipse.Services;
 
-namespace Eclipse.Services;
+namespace Eclipse.Elements;
 
 internal class Legacies : IReactiveElement
 {
@@ -44,7 +45,7 @@ internal class Legacies : IReactiveElement
                     _state.MaxLevel, _state.Prestige,
                     _text, _header, _fill, CanvasService.Element.Legacy, _state.LegacyType);
                 CanvasService.UpdateBloodStats(_state.BonusStats,
-                    new List<LocalizedText> { _firstStat, _secondStat, _thirdStat }, CanvasService.GetBloodStatInfo);
+                    [_firstStat, _secondStat, _thirdStat], CanvasService.GetBloodStatInfo);
             }
             yield return CanvasService.Delay;
         }

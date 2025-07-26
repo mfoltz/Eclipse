@@ -1,10 +1,11 @@
+using Eclipse.Services;
 using Eclipse.Utilities.Extensions;
 using ProjectM;
 using Stunlock.Core;
 using System.Collections;
 using Unity.Entities;
 
-namespace Eclipse.Services;
+namespace Eclipse.Elements;
 
 internal class ShiftSlot : IReactiveElement
 {

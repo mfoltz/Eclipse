@@ -2,15 +2,15 @@ using Eclipse.Elements;
 using System.Collections;
 
 namespace Eclipse.Services.Managers;
-internal class LevelingManager : IReactiveElement
+internal class ShiftManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.Leveling?.Awake();
+        CanvasService.ShiftSlot?.Awake();
     }
     public IEnumerator OnUpdate()
     {
-        return CanvasService.Leveling?.OnUpdate() ?? OnBreak();
+        return CanvasService.ShiftSlot?.OnUpdate() ?? OnBreak();
 
         static IEnumerator OnBreak()
         {

@@ -1,11 +1,9 @@
+using Eclipse.Services;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using ProjectM.UI;
 
-namespace Eclipse.Services;
-
+namespace Eclipse.Elements;
 internal class Expertise : IReactiveElement
 {
     GameObject _barGameObject;
@@ -16,7 +14,6 @@ internal class Expertise : IReactiveElement
     LocalizedText _header;
     LocalizedText _text;
     Image _fill;
-
     public void Awake()
     {
         if (CanvasService.ExpertiseEnabled)
@@ -26,7 +23,6 @@ internal class Expertise : IReactiveElement
                 ref _firstStat, ref _secondStat, ref _thirdStat);
         }
     }
-
     public IEnumerator OnUpdate()
     {
         while (true)
@@ -37,13 +33,12 @@ internal class Expertise : IReactiveElement
                     CanvasService._expertiseMaxLevel, CanvasService._expertisePrestige,
                     _text, _header, _fill, CanvasService.Element.Expertise, CanvasService._expertiseType);
                 CanvasService.UpdateWeaponStats(CanvasService._expertiseBonusStats,
-                    new List<LocalizedText> { _firstStat, _secondStat, _thirdStat }, CanvasService.GetWeaponStatInfo);
+                    [_firstStat, _secondStat, _thirdStat], CanvasService.GetWeaponStatInfo);
                 CanvasService.GetAndUpdateWeaponStatBuffer(Core.LocalCharacter);
             }
             yield return CanvasService.Delay;
         }
     }
-
     public void Toggle()
     {
         bool active = !_barGameObject.activeSelf;

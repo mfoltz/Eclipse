@@ -1,3 +1,4 @@
+using Eclipse.Elements;
 using System.Collections;
 
 namespace Eclipse.Services.Managers;
@@ -8,12 +9,11 @@ internal class ExpertiseManager : IReactiveElement
     {
         CanvasService.Expertise?.Awake();
     }
-
     public IEnumerator OnUpdate()
     {
-        return CanvasService.Expertise?.OnUpdate() ?? Dummy();
+        return CanvasService.Expertise?.OnUpdate() ?? OnBreak();
 
-        static IEnumerator Dummy()
+        static IEnumerator OnBreak()
         {
             yield break;
         }

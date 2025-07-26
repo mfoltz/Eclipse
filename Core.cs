@@ -12,7 +12,7 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace Eclipse;
-internal class Core
+internal static class Core
 {
     public static World Client => _client;
     static World _client;
@@ -62,6 +62,8 @@ internal class Core
 
         _localCharacter = Entity.Null;
         _localUser = Entity.Null;
+
+        CanvasService.ResetStates();
     }
     public static void SetCanvas(UICanvasBase canvas)
     {

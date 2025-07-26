@@ -26,13 +26,13 @@ internal class LevelingDto
 internal class LegacyDto : LevelingDto
 {
     internal string LegacyType { get; set; } = string.Empty;
-    internal List<string> BonusStats { get; set; } = new();
+    internal List<string> BonusStats { get; set; } = [];
 }
 
 internal class ExpertiseDto : LevelingDto
 {
     internal string ExpertiseType { get; set; } = string.Empty;
-    internal List<string> BonusStats { get; set; } = new();
+    internal List<string> BonusStats { get; set; } = [];
 }
 
 internal class FamiliarDto
@@ -41,7 +41,7 @@ internal class FamiliarDto
     internal int Level { get; set; }
     internal int Prestige { get; set; }
     internal string FamiliarName { get; set; } = string.Empty;
-    internal List<string> FamiliarStats { get; set; } = new();
+    internal List<string> FamiliarStats { get; set; } = [];
 }
 
 internal class ProfessionDto

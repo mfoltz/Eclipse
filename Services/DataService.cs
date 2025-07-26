@@ -4,7 +4,7 @@ using System.IO;
 using Eclipse.DTOs;
 using UnityEngine;
 using Eclipse.Utilities.Extensions;
-using Eclipse.States;
+using Eclipse.Elements.States;
 
 namespace Eclipse.Services;
 internal static class DataService
@@ -20,7 +20,7 @@ internal static class DataService
     internal static FamiliarState Familiar { get; } = new();
     internal static ProfessionsState Professions { get; } = new();
     internal static QuestState Quests { get; } = new();
-    internal static ShiftSlotState ShiftSlot { get; } = new();
+    internal static ShiftState ShiftSlot { get; } = new();
 
     [Flags]
     public enum ReservedFlags : int

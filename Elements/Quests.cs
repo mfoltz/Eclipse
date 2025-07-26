@@ -1,9 +1,9 @@
+using Eclipse.Services;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using ProjectM.UI;
 
-namespace Eclipse.Services;
+namespace Eclipse.Elements;
 
 internal class Quests : IReactiveElement
 {
@@ -41,15 +41,17 @@ internal class Quests : IReactiveElement
                     CanvasService._weeklyTargetType, CanvasService._weeklyTarget,
                     CanvasService._weeklyProgress, CanvasService._weeklyGoal, CanvasService._weeklyVBlood);
             }
+
             yield return CanvasService.Delay;
         }
     }
-
     public void Toggle()
     {
         bool active = !_dailyQuestObject.activeSelf;
+
         _dailyQuestObject.SetActive(active);
         _weeklyQuestObject.SetActive(active);
+
         CanvasService.SetElementState(_dailyQuestObject, active);
         CanvasService.SetElementState(_weeklyQuestObject, active);
     }

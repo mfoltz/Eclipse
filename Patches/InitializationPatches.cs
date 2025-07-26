@@ -10,7 +10,7 @@ namespace Eclipse.Patches;
 internal static class InitializationPatches
 {
     static readonly bool _shouldInitialize = Plugin.Leveling || Plugin.Expertise || Plugin.Legacies || Plugin.Familiars || Plugin.Quests;
-    static bool _setCanvas = false;
+    static bool _setCanvas;
 
     [HarmonyPatch(typeof(GameDataManager), nameof(GameDataManager.OnUpdate))]
     [HarmonyPostfix]
@@ -47,7 +47,7 @@ internal static class InitializationPatches
         }
     }
     public static bool AttributesInitialized => _attributesInitialized;
-    static bool _attributesInitialized = false;
+    static bool _attributesInitialized;
 
     static InventorySubMenu _inventorySubMenu;
 
@@ -55,12 +55,14 @@ internal static class InitializationPatches
     [HarmonyPostfix]
     static void InitializeUIPostfix(InventorySubMenu menu)
     {
-        Core.Log.LogWarning($"[InventorySubMenuMapper.InitializeUI]");
+        // Core.Log.LogWarning($"[InventorySubMenuMapper.InitializeUI]");
 
         if (_inventorySubMenu == null)
         {
             _inventorySubMenu = menu;
         }
+
+        TryInitializeAttributeValues();
     }
     public static void TryInitializeAttributeValues()
     {
@@ -94,8 +96,6 @@ internal static class InitializationPatches
         CanvasService._abilityTooltipData = null;
         CanvasService._dailyQuestIcon = null;
         CanvasService._weeklyQuestIcon = null;
-
-        CanvasService.ResetState(); // need to add the rest here, just sprites for now
 
         Core.Reset();
     }

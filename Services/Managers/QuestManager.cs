@@ -1,19 +1,18 @@
+using Eclipse.Elements;
 using System.Collections;
 
 namespace Eclipse.Services.Managers;
-
 internal class QuestManager : IReactiveElement
 {
     public void Awake()
     {
         CanvasService.Quests?.Awake();
     }
-
     public IEnumerator OnUpdate()
     {
-        return CanvasService.Quests?.OnUpdate() ?? Dummy();
+        return CanvasService.Quests?.OnUpdate() ?? OnBreak();
 
-        static IEnumerator Dummy()
+        static IEnumerator OnBreak()
         {
             yield break;
         }

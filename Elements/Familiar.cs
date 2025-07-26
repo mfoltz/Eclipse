@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using ProjectM.UI;
+using Eclipse.Services;
 
-namespace Eclipse.Services;
+namespace Eclipse.Elements;
 
 internal class Familiar : IReactiveElement
 {
@@ -37,7 +38,7 @@ internal class Familiar : IReactiveElement
                     CanvasService._familiarMaxLevel, CanvasService._familiarPrestige,
                     _text, _header, _fill, CanvasService.Element.Familiars, CanvasService._familiarName);
                 CanvasService.UpdateFamiliarStats(CanvasService._familiarStats,
-                    new List<LocalizedText> { _maxHealth, _physicalPower, _spellPower });
+                    [_maxHealth, _physicalPower, _spellPower]);
             }
             yield return CanvasService.Delay;
         }

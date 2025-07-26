@@ -1,18 +1,16 @@
+using Eclipse.Services;
 using System.Collections;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using ProjectM.UI;
 
-namespace Eclipse.Services;
+namespace Eclipse.Elements;
 
 internal class Professions : IReactiveElement
 {
-    readonly Dictionary<DataService.Profession, GameObject> _bars = new();
-    readonly Dictionary<DataService.Profession, LocalizedText> _levelTexts = new();
-    readonly Dictionary<DataService.Profession, Image> _progressFills = new();
-    readonly Dictionary<DataService.Profession, Image> _fillImages = new();
+    readonly Dictionary<DataService.Profession, GameObject> _bars = [];
+    readonly Dictionary<DataService.Profession, LocalizedText> _levelTexts = [];
+    readonly Dictionary<DataService.Profession, Image> _progressFills = [];
+    readonly Dictionary<DataService.Profession, Image> _fillImages = [];
     const int MAX_LEVEL = 100;
 
     public void Awake()
