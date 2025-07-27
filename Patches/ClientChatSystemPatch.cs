@@ -2,7 +2,6 @@
 using Eclipse.Services;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
-using ProjectM;
 using ProjectM.Network;
 using ProjectM.UI;
 using Stunlock.Core;
@@ -251,6 +250,6 @@ internal static class ClientChatSystemPatch
     }
     static void OnInputChange()
     {
-        Core.Log.LogWarning($"[OnInputChange]");
+        // Core.Log.LogWarning($"[OnInputChange]");
     }
 }

@@ -417,7 +417,7 @@ internal class CanvasService
 
     static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _weaponStats = [];
     static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _bloodStats = [];
-    static bool _isGamepad => InputActionSystemPatch.IsGamepad;
+    static bool IsGamepad => InputActionSystemPatch.IsGamepad;
     public CanvasService(UICanvasBase canvas)
     {
         _canvasBase = canvas;
@@ -775,8 +775,8 @@ internal class CanvasService
                 Core.Log.LogError($"Error updating ability bar: {e}");
             }
 
-            bool isSynced = _isGamepad ? _controllerType.Equals(ControllerType.Gamepad) : _controllerType.Equals(ControllerType.KeyboardAndMouse);
-            if (!isSynced) SyncAdaptiveElements(_isGamepad);
+            bool isSynced = IsGamepad ? _controllerType.Equals(ControllerType.Gamepad) : _controllerType.Equals(ControllerType.KeyboardAndMouse);
+            if (!isSynced) SyncAdaptiveElements(IsGamepad);
 
             yield return _delay;
         }

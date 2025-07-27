@@ -1,7 +1,5 @@
-﻿using Eclipse.Services;
-using HarmonyLib;
+﻿using HarmonyLib;
 using ProjectM;
-using UnityEngine.InputSystem;
 
 namespace Eclipse.Patches;
 
@@ -9,7 +7,7 @@ namespace Eclipse.Patches;
 internal static class InputActionSystemPatch
 {
     public static bool IsGamepad => _isGamepad;
-    static bool _isGamepad = false; 
+    static bool _isGamepad;
 
     /*
     [HarmonyPatch(typeof(InputActionSystem), nameof(InputActionSystem.OnInputDeviceChange))]
