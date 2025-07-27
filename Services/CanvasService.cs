@@ -34,6 +34,7 @@ internal class CanvasService
     static readonly bool _professionBars = Plugin.Professions;
     static readonly bool _questTracker = Plugin.Quests;
     static readonly bool _shiftSlot = Plugin.ShiftSlot;
+    static readonly bool _eclipsed = Plugin.Eclipsed;
     public enum UIElement
     {
         Experience,
@@ -124,22 +125,23 @@ internal class CanvasService
     static Sprite _questKillVBloodUnit;
 
     static readonly Regex _classNameRegex = new("(?<!^)([A-Z])");
-    public static readonly Regex AbilitySpellRegex = new(@"(?<=AB_).*(?=_Group)");
+    public static readonly Regex AbilitySpellRegex = new("(?<=AB_).*(?=_Group)");
 
     static readonly Dictionary<PlayerClass, Color> _classColorHexMap = new()
     {
         { PlayerClass.ShadowBlade, new Color(0.6f, 0.1f, 0.9f) },  // ignite purple
-        { PlayerClass.DemonHunter, new Color(1f, 0.8f, 0f) },        // static yellow
-        { PlayerClass.BloodKnight, new Color(1f, 0f, 0f) },           // leech red
-        { PlayerClass.ArcaneSorcerer, new Color(0f, 0.5f, 0.5f) },    // weaken teal
-        { PlayerClass.VampireLord, new Color(0f, 1f, 1f) },           // chill cyan
-        { PlayerClass.DeathMage, new Color(0f, 1f, 0f) }              // condemn green
+        { PlayerClass.DemonHunter, new Color(1f, 0.8f, 0f) },      // static yellow
+        { PlayerClass.BloodKnight, new Color(1f, 0f, 0f) },        // leech red
+        { PlayerClass.ArcaneSorcerer, new Color(0f, 0.5f, 0.5f) }, // weaken teal
+        { PlayerClass.VampireLord, new Color(0f, 1f, 1f) },        // chill cyan
+        { PlayerClass.DeathMage, new Color(0f, 1f, 0f) }           // condemn green
     };
 
     public const string V1_3 = "1.3";
 
-    static readonly WaitForSeconds _delay = new(1f);
-    static readonly WaitForSeconds _shiftDelay = new(0.1f);
+    static readonly WaitForSeconds _delay = _eclipsed
+        ? new WaitForSeconds(0.1f)
+        : new WaitForSeconds(1f);
 
     static UICanvasBase _canvasBase;
     static Canvas _bottomBarCanvas;
@@ -1067,7 +1069,7 @@ internal class CanvasService
                 }
             }
 
-            yield return _shiftDelay;
+            yield return _delay;
         }
     }
     static bool TryUpdateTooltipData(Entity abilityGroupEntity, PrefabGUID abilityGroupPrefabGUID)

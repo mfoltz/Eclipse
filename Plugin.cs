@@ -30,6 +30,7 @@ internal class Plugin : BasePlugin
     static ConfigEntry<bool> _professions;
     static ConfigEntry<bool> _quests;
     static ConfigEntry<bool> _shiftSlot;
+    static ConfigEntry<bool> _eclipsed;
     public static bool Leveling => _leveling.Value;
     public static bool Prestige => _prestige.Value;
     public static bool Legacies => _legacies.Value;
@@ -38,6 +39,7 @@ internal class Plugin : BasePlugin
     public static bool Professions => _professions.Value;
     public static bool Quests => _quests.Value;
     public static bool ShiftSlot => _shiftSlot.Value;
+    public static bool Eclipsed => _eclipsed.Value;
     public override void Load()
     {
         Instance = this;
@@ -70,6 +72,8 @@ internal class Plugin : BasePlugin
         _professions = InitConfigEntry("UIOptions", "Professions", true, "Enable/Disable the professions tab, requires both ClientCompanion/ProfessionSystem to be enabled in Bloodcraft.");
         _quests = InitConfigEntry("UIOptions", "QuestTrackers", true, "Enable/Disable the quest tracker, requires both ClientCompanion/QuestSystem to be enabled in Bloodcraft.");
         _shiftSlot = InitConfigEntry("UIOptions", "ShiftSlot", true, "Enable/Disable the shift slot, requires both ClientCompanion and shift slot spell to be enabled in Bloodcraft.");
+
+        _eclipsed = InitConfigEntry("UIOptions", "Eclipsed", true, "Set to false for slower update intervals (0.1s -> 1s) if performance is negatively impacted.");
     }
     static ConfigEntry<T> InitConfigEntry<T>(string section, string key, T defaultValue, string description)
     {

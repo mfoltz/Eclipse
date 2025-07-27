@@ -1,3 +1,6 @@
+`1.3.11`
+- decreased update interval for more responsive UI elements (1s -> 0.1s), added config option if you prefer the old behavior; note this won't have much of an effect unless using Bloodcraft[1.11.14] or later and the server has Eclipsed enabled
+
 `1.3.10`
 - gamepad mode (position of quest windows and profession bars will change based on detected input)
 - ability slot click-toggle for profession bars functional again

@@ -38,3 +38,5 @@ Jairon O.; Odjit; Jera; Kokuren TCG and Gaming Shop; Rexxn; Eduardo G.; DirtyMik
   Enable or disable the profession bars.
 - **ShiftSlot**: `ShiftSlot` (bool, default: true)  
   Enable or disable the shift slot appearing when applicable.
+- **Eclipsed**: `Eclipsed` (bool, default: true)  
+  Controls update frequency for UI; true for 0.1s, false for 1s. Minimal effect if server setting for Eclipsed does not match.
