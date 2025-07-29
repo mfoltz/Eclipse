@@ -2,7 +2,8 @@
 
 These tasks break down the work described in `refactor-prd.md`.
 
-- [ ] **Compile Audit** - Run `dotnet build` and record all warnings and errors. _(Owner: Lead Developer, Due: 2025-07-31)_
+- [x] **Compile Audit** - Run `dotnet build` and record all warnings and errors. _(Owner: Lead Developer, Due: 2025-07-31)_
+  - Build output shows **9** warnings and **3** errors related to missing `Prefabs` references and unused fields.
 - [ ] **Fix Build Errors** - Resolve the `Prefabs` references in `Recipes.cs` and any other compiler errors. _(Owner: Lead Developer, Due: 2025-08-03)_
 - [ ] **Clean Warnings** - Enable `#nullable` in `DataParsers.cs` and handle unused fields in `CanvasService.cs`. _(Owner: Contributor, Due: 2025-08-03)_
 - [ ] **Apply SRP & Documentation** - Review each service and utility for single responsibility and add XML comments to guide total refactor. _(Owner: Lead Developer, Due: 2025-08-10)_
