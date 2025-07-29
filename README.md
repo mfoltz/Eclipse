@@ -38,13 +38,3 @@ Jairon O.; Odjit; Jera; Kokuren TCG and Gaming Shop; Rexxn; Eduardo G.; DirtyMik
   Enable or disable the profession bars.
 - **ShiftSlot**: `ShiftSlot` (bool, default: true)  
   Enable or disable the shift slot appearing when applicable.
-
-## Codex Workflow
-
-1. Run `.codex/install.sh` once to install dependencies
-2. Build and deploy locally with `./dev_init.sh`
-3. Update message hashes using:
-   `dotnet run --project Eclipse.csproj -p:RunGenerateREADME=false -- generate-messages .`
-4. Use the keywords (**CreatePrd**, **CreateTasks**, **TaskMaster**, **ClosePrd**) to manage PRDs and tasks
-
-Current PRDs and task lists are stored in `.project-management/current-prd/`, while completed items are moved to `.project-management/closed-prd/`.
