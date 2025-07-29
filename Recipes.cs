@@ -1,4 +1,5 @@
 ﻿using Eclipse.Services;
+using Bloodcraft.Resources;
 using ProjectM;
 using ProjectM.Shared;
 using ProjectM.UI;
@@ -342,9 +343,9 @@ internal static class Recipes
             }
 
             recipeRequirementBuffer = prefabEntity.ReadBuffer<RecipeRequirementBuffer>();
-            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = Prefabs.Item_Ingredient_Gemdust, Amount = 8 });
-            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = Prefabs.Item_Ingredient_Plant_PlantFiber, Amount = 16 });
-            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = Prefabs.Item_Ingredient_Pollen, Amount = 24 });
+            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = PrefabGUIDs.Item_Ingredient_Gemdust, Amount = 8 });
+            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = PrefabGUIDs.Item_Ingredient_Plant_PlantFiber, Amount = 16 });
+            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = PrefabGUIDs.Item_Ingredient_Pollen, Amount = 24 });
         }
 
         if (DataService._primalCost.HasValue() && PrefabCollectionSystem._PrefabGuidToEntityMap.TryGetValue(DataService._primalCost, out Entity costEntity) && costEntity.Has<ItemData>())
