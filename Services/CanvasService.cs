@@ -154,7 +154,7 @@ internal class CanvasService
     internal static LevelingState LevelingState => DataService.Leveling;
     internal static LegacyState LegacyState => DataService.Legacy;
 
-    public static string _expertiseType;
+    public static string _expertiseType = string.Empty;
     public static float _expertiseProgress = 0f;
     public static int _expertiseLevel = 0;
     public static int _expertisePrestige = 0;
@@ -193,9 +193,6 @@ internal class CanvasService
     public static float _fishingProgress = 0f;
     public static int _fishingLevel = 0;
 
-    static GameObject _dailyQuestObject;
-    static LocalizedText _dailyQuestHeader;
-    static LocalizedText _dailyQuestSubHeader;
     public static Image _dailyQuestIcon;
     public static TargetType _dailyTargetType = TargetType.Kill;
     public static int _dailyProgress = 0;
@@ -203,9 +200,6 @@ internal class CanvasService
     public static string _dailyTarget = "";
     public static bool _dailyVBlood = false;
 
-    static GameObject _weeklyQuestObject;
-    static LocalizedText _weeklyQuestHeader;
-    static LocalizedText _weeklyQuestSubHeader;
     public static Image _weeklyQuestIcon;
     public static TargetType _weeklyTargetType = TargetType.Kill;
     public static int _weeklyProgress = 0;

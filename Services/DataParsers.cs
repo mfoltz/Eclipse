@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Eclipse.DTOs;
 
+#nullable enable
+
 namespace Eclipse.Services;
 
 internal interface IDataParser
@@ -60,3 +62,5 @@ internal class JsonDataParser : IDataParser
         }
     }
 }
+
+#nullable restore
