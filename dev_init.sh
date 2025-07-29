@@ -8,7 +8,7 @@ if ! command -v dotnet >/dev/null; then
 fi
 
 PROJECT="$(dirname "$0")/Eclipse.csproj"
-dotnet build --no-restore -p:RunGenerateREADME=false "$PROJECT"
+dotnet build --no-restore "$PROJECT"
 
 DLL_PATH="$(dirname "$0")/bin/Release/net6.0/Eclipse.dll"
 
