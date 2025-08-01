@@ -20,6 +20,10 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Eclipse.Tests/**/*.cs" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\secrets.json" />
 		<EmbeddedResource Include="Resources\Localization\English.json" />

@@ -457,68 +457,75 @@ internal static class DataService
     {
         int index = 0;
 
-        LevelingData levelingData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
-        LegacyData legacyData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
-        ExpertiseData expertiseData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
-        FamiliarData familiarData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
-        ProfessionData professionData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
-        QuestData dailyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
-        QuestData weeklyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+        try
+        {
+            LevelingData levelingData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+            LegacyData legacyData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+            ExpertiseData expertiseData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+            FamiliarData familiarData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+            ProfessionData professionData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+            QuestData dailyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
+            QuestData weeklyQuestData = new(playerData[index++], playerData[index++], playerData[index++], playerData[index++], playerData[index++]);
 
-        Leveling.Progress = levelingData.Progress;
-        Leveling.Level = levelingData.Level;
-        Leveling.Prestige = levelingData.Prestige;
-        Leveling.Class = levelingData.Class;
+            Leveling.Progress = levelingData.Progress;
+            Leveling.Level = levelingData.Level;
+            Leveling.Prestige = levelingData.Prestige;
+            Leveling.Class = levelingData.Class;
 
-        Legacy.Progress = legacyData.Progress;
-        Legacy.Level = legacyData.Level;
-        Legacy.Prestige = legacyData.Prestige;
-        Legacy.LegacyType = legacyData.LegacyType;
-        Legacy.BonusStats = legacyData.BonusStats;
+            Legacy.Progress = legacyData.Progress;
+            Legacy.Level = legacyData.Level;
+            Legacy.Prestige = legacyData.Prestige;
+            Legacy.LegacyType = legacyData.LegacyType;
+            Legacy.BonusStats = legacyData.BonusStats;
 
-        Expertise.Progress = expertiseData.Progress;
-        Expertise.Level = expertiseData.Level;
-        Expertise.Prestige = expertiseData.Prestige;
-        Expertise.ExpertiseType = expertiseData.ExpertiseType;
-        Expertise.BonusStats = expertiseData.BonusStats;
+            Expertise.Progress = expertiseData.Progress;
+            Expertise.Level = expertiseData.Level;
+            Expertise.Prestige = expertiseData.Prestige;
+            Expertise.ExpertiseType = expertiseData.ExpertiseType;
+            Expertise.BonusStats = expertiseData.BonusStats;
 
-        Familiar.Progress = familiarData.Progress;
-        Familiar.Level = familiarData.Level;
-        Familiar.Prestige = familiarData.Prestige;
-        Familiar.Name = familiarData.FamiliarName;
-        Familiar.Stats = familiarData.FamiliarStats;
+            Familiar.Progress = familiarData.Progress;
+            Familiar.Level = familiarData.Level;
+            Familiar.Prestige = familiarData.Prestige;
+            Familiar.Name = familiarData.FamiliarName;
+            Familiar.Stats = familiarData.FamiliarStats;
 
-        Professions.EnchantingProgress = professionData.EnchantingProgress;
-        Professions.EnchantingLevel = professionData.EnchantingLevel;
-        Professions.AlchemyProgress = professionData.AlchemyProgress;
-        Professions.AlchemyLevel = professionData.AlchemyLevel;
-        Professions.HarvestingProgress = professionData.HarvestingProgress;
-        Professions.HarvestingLevel = professionData.HarvestingLevel;
-        Professions.BlacksmithingProgress = professionData.BlacksmithingProgress;
-        Professions.BlacksmithingLevel = professionData.BlacksmithingLevel;
-        Professions.TailoringProgress = professionData.TailoringProgress;
-        Professions.TailoringLevel = professionData.TailoringLevel;
-        Professions.WoodcuttingProgress = professionData.WoodcuttingProgress;
-        Professions.WoodcuttingLevel = professionData.WoodcuttingLevel;
-        Professions.MiningProgress = professionData.MiningProgress;
-        Professions.MiningLevel = professionData.MiningLevel;
-        Professions.FishingProgress = professionData.FishingProgress;
-        Professions.FishingLevel = professionData.FishingLevel;
+            Professions.EnchantingProgress = professionData.EnchantingProgress;
+            Professions.EnchantingLevel = professionData.EnchantingLevel;
+            Professions.AlchemyProgress = professionData.AlchemyProgress;
+            Professions.AlchemyLevel = professionData.AlchemyLevel;
+            Professions.HarvestingProgress = professionData.HarvestingProgress;
+            Professions.HarvestingLevel = professionData.HarvestingLevel;
+            Professions.BlacksmithingProgress = professionData.BlacksmithingProgress;
+            Professions.BlacksmithingLevel = professionData.BlacksmithingLevel;
+            Professions.TailoringProgress = professionData.TailoringProgress;
+            Professions.TailoringLevel = professionData.TailoringLevel;
+            Professions.WoodcuttingProgress = professionData.WoodcuttingProgress;
+            Professions.WoodcuttingLevel = professionData.WoodcuttingLevel;
+            Professions.MiningProgress = professionData.MiningProgress;
+            Professions.MiningLevel = professionData.MiningLevel;
+            Professions.FishingProgress = professionData.FishingProgress;
+            Professions.FishingLevel = professionData.FishingLevel;
 
-        Quests.DailyTargetType = dailyQuestData.TargetType;
-        Quests.DailyProgress = dailyQuestData.Progress;
-        Quests.DailyGoal = dailyQuestData.Goal;
-        Quests.DailyTarget = dailyQuestData.Target;
-        Quests.DailyVBlood = dailyQuestData.IsVBlood;
+            Quests.DailyTargetType = dailyQuestData.TargetType;
+            Quests.DailyProgress = dailyQuestData.Progress;
+            Quests.DailyGoal = dailyQuestData.Goal;
+            Quests.DailyTarget = dailyQuestData.Target;
+            Quests.DailyVBlood = dailyQuestData.IsVBlood;
 
-        Quests.WeeklyTargetType = weeklyQuestData.TargetType;
-        Quests.WeeklyProgress = weeklyQuestData.Progress;
-        Quests.WeeklyGoal = weeklyQuestData.Goal;
-        Quests.WeeklyTarget = weeklyQuestData.Target;
-        Quests.WeeklyVBlood = weeklyQuestData.IsVBlood;
+            Quests.WeeklyTargetType = weeklyQuestData.TargetType;
+            Quests.WeeklyProgress = weeklyQuestData.Progress;
+            Quests.WeeklyGoal = weeklyQuestData.Goal;
+            Quests.WeeklyTarget = weeklyQuestData.Target;
+            Quests.WeeklyVBlood = weeklyQuestData.IsVBlood;
 
-        ShiftSpellData shiftSpellData = new(playerData[index]);
-        ShiftSlot.ShiftSpellIndex = shiftSpellData.ShiftSpellIndex;
+            ShiftSpellData shiftSpellData = new(playerData[index]);
+            ShiftSlot.ShiftSpellIndex = shiftSpellData.ShiftSpellIndex;
+        }
+        catch (Exception ex)
+        {
+            Core.Log.LogWarning($"Failed to parse player data: {ex}");
+        }
     }
     public static void ApplyConfigDto(ConfigDto dto)
     {
