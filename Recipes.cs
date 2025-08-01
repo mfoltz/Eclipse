@@ -1,5 +1,6 @@
 ﻿using Bloodcraft.Resources;
 using Eclipse.Services;
+using Bloodcraft.Resources;
 using ProjectM;
 using ProjectM.Shared;
 using ProjectM.UI;

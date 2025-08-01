@@ -153,7 +153,7 @@ internal class CanvasService
     internal static LevelingState LevelingState => DataService.Leveling;
     internal static LegacyState LegacyState => DataService.Legacy;
 
-    public static string _expertiseType;
+    public static string _expertiseType = string.Empty;
     public static float _expertiseProgress = 0f;
     public static int _expertiseLevel = 0;
     public static int _expertisePrestige = 0;
@@ -192,9 +192,6 @@ internal class CanvasService
     public static float _fishingProgress = 0f;
     public static int _fishingLevel = 0;
 
-    static GameObject _dailyQuestObject;
-    static LocalizedText _dailyQuestHeader;
-    static LocalizedText _dailyQuestSubHeader;
     public static Image _dailyQuestIcon;
     public static TargetType _dailyTargetType = TargetType.Kill;
     public static int _dailyProgress = 0;
@@ -202,9 +199,6 @@ internal class CanvasService
     public static string _dailyTarget = "";
     public static bool _dailyVBlood = false;
 
-    static GameObject _weeklyQuestObject;
-    static LocalizedText _weeklyQuestHeader;
-    static LocalizedText _weeklyQuestSubHeader;
     public static Image _weeklyQuestIcon;
     public static TargetType _weeklyTargetType = TargetType.Kill;
     public static int _weeklyProgress = 0;
@@ -991,17 +985,19 @@ internal class CanvasService
     {
         if (_killSwitch) return;
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3 && i < statTexts.Count; i++)
         {
-            if (bonusStats[i] != "None")
+            string stat = i < bonusStats.Count ? bonusStats[i] : "None";
+
+            if (stat != "None")
             {
                 if (!statTexts[i].enabled) statTexts[i].enabled = true;
                 if (!statTexts[i].gameObject.active) statTexts[i].gameObject.SetActive(true);
 
-                string statInfo = getStatInfo(bonusStats[i]);
+                string statInfo = getStatInfo(stat);
                 statTexts[i].ForceSet(statInfo);
             }
-            else if (bonusStats[i] == "None" && statTexts[i].enabled)
+            else if (statTexts[i].enabled)
             {
                 statTexts[i].ForceSet("");
                 statTexts[i].enabled = false;
@@ -1014,17 +1010,19 @@ internal class CanvasService
     {
         if (_killSwitch) return;
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3 && i < statTexts.Count; i++)
         {
-            if (bonusStats[i] != "None")
+            string stat = i < bonusStats.Count ? bonusStats[i] : "None";
+
+            if (stat != "None")
             {
                 if (!statTexts[i].enabled) statTexts[i].enabled = true;
                 if (!statTexts[i].gameObject.active) statTexts[i].gameObject.SetActive(true);
 
-                string statInfo = getStatInfo(bonusStats[i]);
+                string statInfo = getStatInfo(stat);
                 statTexts[i].ForceSet(statInfo);
             }
-            else if (bonusStats[i] == "None" && statTexts[i].enabled)
+            else if (statTexts[i].enabled)
             {
                 statTexts[i].ForceSet("");
                 statTexts[i].enabled = false;
