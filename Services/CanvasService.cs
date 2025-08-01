@@ -983,17 +983,19 @@ internal class CanvasService
     {
         if (_killSwitch) return;
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3 && i < statTexts.Count; i++)
         {
-            if (bonusStats[i] != "None")
+            string stat = i < bonusStats.Count ? bonusStats[i] : "None";
+
+            if (stat != "None")
             {
                 if (!statTexts[i].enabled) statTexts[i].enabled = true;
                 if (!statTexts[i].gameObject.active) statTexts[i].gameObject.SetActive(true);
 
-                string statInfo = getStatInfo(bonusStats[i]);
+                string statInfo = getStatInfo(stat);
                 statTexts[i].ForceSet(statInfo);
             }
-            else if (bonusStats[i] == "None" && statTexts[i].enabled)
+            else if (statTexts[i].enabled)
             {
                 statTexts[i].ForceSet("");
                 statTexts[i].enabled = false;
@@ -1006,17 +1008,19 @@ internal class CanvasService
     {
         if (_killSwitch) return;
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3 && i < statTexts.Count; i++)
         {
-            if (bonusStats[i] != "None")
+            string stat = i < bonusStats.Count ? bonusStats[i] : "None";
+
+            if (stat != "None")
             {
                 if (!statTexts[i].enabled) statTexts[i].enabled = true;
                 if (!statTexts[i].gameObject.active) statTexts[i].gameObject.SetActive(true);
 
-                string statInfo = getStatInfo(bonusStats[i]);
+                string statInfo = getStatInfo(stat);
                 statTexts[i].ForceSet(statInfo);
             }
-            else if (bonusStats[i] == "None" && statTexts[i].enabled)
+            else if (statTexts[i].enabled)
             {
                 statTexts[i].ForceSet("");
                 statTexts[i].enabled = false;
