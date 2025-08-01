@@ -37,7 +37,9 @@ internal static class Core
     public static ClientGameManager ClientGameManager => SystemService.ClientScriptMapper._ClientGameManager;
     public static CanvasService CanvasService { get; internal set; }
     public static ServerTime ServerTime => ClientGameManager.ServerTime;
-    public static ManualLogSource Log => Plugin.LogInstance;
+    public static ManualLogSource Log => Plugin.Instance != null
+        ? Plugin.LogInstance
+        : BepInEx.Logging.Logger.CreateLogSource("Eclipse.Tests");
 
     static MonoBehaviour _monoBehaviour;
     public static byte[] NEW_SHARED_KEY { get; internal set; }
