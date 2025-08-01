@@ -2,7 +2,6 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Eclipse.Resources;
 using Eclipse.Services;
-using Eclipse.Utilities.Extensions;
 using ProjectM;
 using ProjectM.Physics;
 using ProjectM.Scripting;

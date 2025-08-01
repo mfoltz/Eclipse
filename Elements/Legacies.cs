@@ -1,13 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using ProjectM.UI;
 using Eclipse.Elements.States;
 using Eclipse.Services;
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Eclipse.Elements;
-
 internal class Legacies : IReactiveElement
 {
     readonly LegacyState _state;

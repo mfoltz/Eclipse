@@ -36,6 +36,7 @@ internal class Expertise : IReactiveElement
                     [_firstStat, _secondStat, _thirdStat], CanvasService.GetWeaponStatInfo);
                 CanvasService.GetAndUpdateWeaponStatBuffer(Core.LocalCharacter);
             }
+
             yield return CanvasService.Delay;
         }
     }

@@ -1,4 +1,4 @@
-namespace Eclipse.Utilities.Extensions;
+namespace Eclipse;
 
 internal static class IExtensions
 {

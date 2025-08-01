@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace Eclipse.Elements;
-
 internal class Professions : IReactiveElement
 {
     readonly Dictionary<DataService.Profession, GameObject> _bars = [];

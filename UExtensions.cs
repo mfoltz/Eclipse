@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine;
 using static Eclipse.Services.LocalizationService;
 
-namespace Eclipse.Utilities.Extensions;
+namespace Eclipse;
 
 internal static class UExtensions
 {

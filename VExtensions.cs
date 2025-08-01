@@ -11,7 +11,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace Eclipse.Utilities.Extensions;
+namespace Eclipse;
 
 internal static class VExtensions
 {

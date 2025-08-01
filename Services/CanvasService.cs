@@ -3,7 +3,6 @@ using Eclipse.Elements;
 using Eclipse.Elements.States;
 using Eclipse.Patches;
 using Eclipse.Utilities;
-using Eclipse.Utilities.Extensions;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using ProjectM;
@@ -39,7 +38,7 @@ internal class CanvasService
     public static bool ShiftSlotEnabled { get; } = Plugin.ShiftSlot;
     public enum Element
     {
-        Leveling,
+        Experience,
         Legacy,
         Expertise,
         Familiars,
@@ -269,6 +268,7 @@ internal class CanvasService
     internal static Familiar Familiar { get; set; }
     internal static Quests Quests { get; set; }
     internal static ShiftSlot ShiftSlot { get; set; }
+    internal static SyncAdaptives SyncAdaptives { get; set; }
 
     internal static void SetElementState(GameObject obj, bool state)
     {
@@ -280,7 +280,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, Action> _abilitySlotToggles = new()
     {
-        {Element.Leveling, () => Leveling?.Toggle()},
+        {Element.Experience, () => Leveling?.Toggle()},
         {Element.Legacy, () => Legacies?.Toggle()},
         {Element.Expertise, () => Expertise?.Toggle()},
         {Element.Familiars, () => Familiar?.Toggle()},
@@ -292,7 +292,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, string> _abilitySlotPaths = new()
     {
-        { Element.Leveling, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Primary/" },
+        { Element.Experience, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Primary/" },
         { Element.Legacy, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_WeaponSkill1/" },
         { Element.Expertise, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_WeaponSkill2/" },
         { Element.Familiars, "HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/AbilityBarEntry_Travel/" },
@@ -303,7 +303,7 @@ internal class CanvasService
 
     static readonly Dictionary<Element, bool> _activeElements = new()
     {
-        { Element.Leveling, LevelingEnabled },
+        { Element.Experience, LevelingEnabled },
         { Element.Legacy, LegaciesEnabled },
         { Element.Expertise, ExpertiseEnabled },
         { Element.Familiars, FamiliarEnabled },
@@ -331,7 +331,6 @@ internal class CanvasService
     static readonly Dictionary<UnitStatType, float> _lastSeen = [];
     static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _weaponStats = [];
     static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _bloodStats = [];
-    static bool IsGamepad => InputActionSystemPatch.IsGamepad;
     public CanvasService(UICanvasBase canvas)
     {
         _canvasBase = canvas;
@@ -356,6 +355,7 @@ internal class CanvasService
             Familiar = new Familiar();
             Quests = new Quests();
             ShiftSlot = new ShiftSlot();
+            SyncAdaptives = new SyncAdaptives();
 
             _managers.AddRange(
             [
@@ -365,13 +365,14 @@ internal class CanvasService
                 new Managers.FamiliarManager(),
                 new Managers.ProfessionManager(),
                 new Managers.QuestManager(),
-                new Managers.ShiftManager()
+                new Managers.ShiftManager(),
+                new Managers.SyncManager()
             ]);
 
             foreach (var manager in _managers)
             {
                 manager.Awake();
-                _managerCoroutines.Add(Core.StartCoroutine(manager.OnUpdate()));
+                _managerCoroutines.Add(manager.OnUpdate().Start());
             }
 
             InitializeAbilitySlotButtons();
@@ -622,9 +623,10 @@ internal class CanvasService
             localizedText.ForceSet(statString);
         }
     }
-    public static void UpdateBuffStatBuffer(Entity buffEntity)
+    public static void UpdateBuffStatBuffer()
     {
-        if (!buffEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var buffer)) return;
+        if (!Core.LocalCharacter.TryGetBuff(_statsBuff, out Entity buffEntity)
+            || !buffEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var buffer)) return;
 
         var existingIds = new HashSet<int>();
         for (int i = 0; i < buffer.Length; i++)
@@ -931,7 +933,7 @@ internal class CanvasService
         {
             string header = "";
 
-            if (element.Equals(Element.Leveling))
+            if (element.Equals(Element.Experience))
             {
                 header = $"{element} {IntegerToRoman(prestiges)}";
             }
@@ -1425,7 +1427,7 @@ internal class CanvasService
             controllerAnchorMax: ctrlAnchorMax,
             controllerPivot: ctrlPivot,
             controllerScale: questTransform.localScale * 0.85f
-        // controllerScale: questTransform.localScale
+            // controllerScale: questTransform.localScale
         );
     }
     public static void ConfigureHorizontalProgressBar(ref GameObject barGameObject, ref GameObject informationPanelObject, ref Image fill,
@@ -1615,7 +1617,7 @@ internal class CanvasService
     {
         switch (element)
         {
-            case Element.Leveling:
+            case Element.Experience:
                 ConfigureLevelingPanel(ref informationPanelObject, ref firstText, ref secondText, ref thirdText);
                 break;
             default:
@@ -1808,6 +1810,7 @@ internal class CanvasService
         _sprites.Clear();
     }
 
+    public static ControllerType ControllerType => _controllerType;
     static ControllerType _controllerType = ControllerType.KeyboardAndMouse;
     struct InputAdaptiveElement
     {
@@ -1853,10 +1856,11 @@ internal class CanvasService
             ControllerScale = controllerScale
         });
     }
-    public static void SyncAdaptiveElements(bool isGamepad)
+    public static void SyncAdaptiveElements()
     {
+        bool isGamepad = InputActionSystemPatch.IsGamepad;
         _controllerType = isGamepad ? ControllerType.Gamepad : ControllerType.KeyboardAndMouse;
-        Core.Log.LogWarning($"[OnInputDeviceChanged] - ControllerType: {_controllerType}");
+        // Core.Log.LogWarning($"[OnInputDeviceChanged] - ControllerType: {_controllerType}");
 
         foreach (InputAdaptiveElement adaptiveElement in _adaptiveElements)
         {

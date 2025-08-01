@@ -1,16 +1,16 @@
-using Eclipse.Elements;
+﻿using Eclipse.Elements;
 using System.Collections;
 
 namespace Eclipse.Services.Managers;
-internal class ExpertiseManager : IReactiveElement
+internal class SyncManager : IReactiveElement
 {
     public void Awake()
     {
-        CanvasService.Expertise?.Awake();
+        CanvasService.SyncAdaptives?.Awake();
     }
     public IEnumerator OnUpdate()
     {
-        return CanvasService.Expertise?.OnUpdate() ?? OnBreak();
+        return CanvasService.SyncAdaptives?.OnUpdate() ?? OnBreak();
 
         static IEnumerator OnBreak()
         {

@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace Eclipse.Elements;
-
 internal class Quests : IReactiveElement
 {
     GameObject _dailyQuestObject;

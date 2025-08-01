@@ -40,6 +40,7 @@ internal class Familiar : IReactiveElement
                 CanvasService.UpdateFamiliarStats(CanvasService._familiarStats,
                     [_maxHealth, _physicalPower, _spellPower]);
             }
+
             yield return CanvasService.Delay;
         }
     }

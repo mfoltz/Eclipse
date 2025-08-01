@@ -4,7 +4,6 @@ using ProjectM.UI;
 using Stunlock.Core;
 using Unity.Entities;
 using UnityEngine;
-using Eclipse.Utilities.Extensions;
 
 namespace Eclipse.Patches;
 

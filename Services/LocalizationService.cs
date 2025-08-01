@@ -1,7 +1,6 @@
 using Stunlock.Core;
 using System.Reflection;
 using System.Text.Json;
-using Eclipse.Utilities.Extensions;
 using static Eclipse.Resources.Localization.PrefabNames;
 
 namespace Eclipse.Services;

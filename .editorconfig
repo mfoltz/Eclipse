@@ -365,3 +365,6 @@ dotnet_naming_style.const.required_prefix =
 dotnet_naming_style.const.required_suffix = 
 dotnet_naming_style.const.word_separator = _
 dotnet_naming_style.const.capitalization = all_upper
+
+# RCS1001: Add braces (when expression spans over multiple lines)
+dotnet_diagnostic.RCS1001.severity = none
