@@ -10,6 +10,7 @@ using ProjectM.UI;
 using Stunlock.Core;
 using StunShared.UI;
 using System.Collections;
+using System;
 using System.Text.RegularExpressions;
 using TMPro;
 using Unity.Entities;
@@ -1122,19 +1123,34 @@ internal class CanvasService
     {
         if (_killSwitch) return;
 
-        for (int i = 0; i < 3; i++)
+        // Use the smallest list count to avoid out-of-range errors when either list doesn't have three entries.
+        int count = Math.Min(3, Math.Min(familiarStats.Count, statTexts.Count));
+
+        for (int i = 0; i < count; i++)
         {
-            if (!string.IsNullOrEmpty(familiarStats[i]))
+            string stat = i < familiarStats.Count ? familiarStats[i] : "0";
+
+            if (!string.IsNullOrEmpty(stat) && stat != "0")
             {
                 if (!statTexts[i].enabled) statTexts[i].enabled = true;
                 if (!statTexts[i].gameObject.active) statTexts[i].gameObject.SetActive(true);
 
-                string statInfo = $"<color=#00FFFF>{FamiliarStatStringAbbreviations[i]}</color>: <color=#90EE90>{familiarStats[i]}</color>";
+                string statInfo = $"<color=#00FFFF>{FamiliarStatStringAbbreviations[i]}</color>: <color=#90EE90>{stat}</color>";
                 statTexts[i].ForceSet(statInfo);
             }
             else if (statTexts[i].enabled)
             {
-                statTexts[i].ForceSet("");
+                statTexts[i].ForceSet(string.Empty);
+                statTexts[i].enabled = false;
+            }
+        }
+
+        // Clear remaining text objects if there are more UI slots than stats.
+        for (int i = count; i < Math.Min(3, statTexts.Count); i++)
+        {
+            if (statTexts[i].enabled)
+            {
+                statTexts[i].ForceSet(string.Empty);
                 statTexts[i].enabled = false;
             }
         }
