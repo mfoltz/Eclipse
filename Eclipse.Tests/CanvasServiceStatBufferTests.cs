@@ -18,7 +18,7 @@ public class CanvasServiceStatBufferTests
     {
         Assert.NotNull(WeaponStatsField);
 
-        var weaponStats = (Dictionary<int, ModifyUnitStatBuff_DOTS>)WeaponStatsField!.GetValue(null)!;
+        var weaponStats = (Dictionary<ulong, ModifyUnitStatBuff_DOTS>)WeaponStatsField!.GetValue(null)!;
         var originalStats = weaponStats.ToDictionary(static kvp => kvp.Key, static kvp => kvp.Value);
         var originalWeaponValues = _weaponStatValues;
         var originalClassSynergies = _classStatSynergies;
@@ -56,7 +56,7 @@ public class CanvasServiceStatBufferTests
 
             CanvasService.GetWeaponStatInfo(statName);
 
-            int statId = ModificationIds.GenerateId((int)ModificationIds.StatSourceType.Weapon, (int)WeaponStatType.BonusSpellPower, updatedValue);
+            ulong statId = ModificationIds.GenerateId((int)ModificationIds.StatSourceType.Weapon, (int)WeaponStatType.BonusSpellPower, updatedValue);
             Assert.True(weaponStats.ContainsKey(statId), "Updated stat id should exist in cache.");
             Assert.Single(weaponStats);
             Assert.Equal(updatedValue, weaponStats[statId].Value, 6);
@@ -84,7 +84,7 @@ public class CanvasServiceStatBufferTests
     {
         Assert.NotNull(BloodStatsField);
 
-        var bloodStats = (Dictionary<int, ModifyUnitStatBuff_DOTS>)BloodStatsField!.GetValue(null)!;
+        var bloodStats = (Dictionary<ulong, ModifyUnitStatBuff_DOTS>)BloodStatsField!.GetValue(null)!;
         var originalStats = bloodStats.ToDictionary(static kvp => kvp.Key, static kvp => kvp.Value);
         var originalBloodValues = _bloodStatValues;
         var originalClassSynergies = _classStatSynergies;
@@ -122,7 +122,7 @@ public class CanvasServiceStatBufferTests
 
             CanvasService.GetBloodStatInfo(statName);
 
-            int statId = ModificationIds.GenerateId((int)ModificationIds.StatSourceType.Blood, (int)BloodStatType.ReducedBloodDrain, updatedValue);
+            ulong statId = ModificationIds.GenerateId((int)ModificationIds.StatSourceType.Blood, (int)BloodStatType.ReducedBloodDrain, updatedValue);
             Assert.True(bloodStats.ContainsKey(statId), "Updated stat id should exist in cache.");
             Assert.Single(bloodStats);
             Assert.Equal(updatedValue, bloodStats[statId].Value, 6);
@@ -142,6 +142,40 @@ public class CanvasServiceStatBufferTests
             Legacy.MaxLevel = originalLegacyMaxLevel;
             Legacy.Prestige = originalLegacyPrestige;
             _prestigeStatMultiplier = originalPrestigeMultiplier;
+        }
+    }
+
+    [Fact]
+    public void GenerateId_IsDeterministicAndSalted()
+    {
+        int originalSeed = ModificationIds.SessionSeed;
+
+        try
+        {
+            ModificationIds.SessionSeed = 0;
+
+            int source = (int)ModificationIds.StatSourceType.Weapon;
+            int stat = (int)WeaponStatType.BonusSpellPower;
+            float baseValue = 1.234f;
+
+            ulong first = ModificationIds.GenerateId(source, stat, baseValue);
+            ulong second = ModificationIds.GenerateId(source, stat, baseValue);
+
+            Assert.Equal(first, second);
+            Assert.Equal(ModificationIds.ExtractMetadata(first), ModificationIds.ExtractMetadata(second));
+
+            float nearbyValue = baseValue + 0.01f;
+            ulong neighbor = ModificationIds.GenerateId(source, stat, nearbyValue);
+
+            Assert.NotEqual(first, neighbor);
+            Assert.NotEqual(ModificationIds.ExtractSalt(first), ModificationIds.ExtractSalt(neighbor));
+
+            Assert.True(ModificationIds.TryParseId(first, out string description));
+            Assert.Contains(WeaponStatType.BonusSpellPower.ToString(), description);
+        }
+        finally
+        {
+            ModificationIds.SessionSeed = originalSeed;
         }
     }
 }
