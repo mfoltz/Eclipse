@@ -1062,7 +1062,7 @@ internal class CanvasService
                     Id = new(statModificationId)
                 };
 
-                _weaponStats.TryAdd(statModificationId, unitStatBuff);
+                _weaponStats[statModificationId] = unitStatBuff;
                 return FormatWeaponStat(weaponStat, displayStatValue);
             }
             else
@@ -1101,7 +1101,7 @@ internal class CanvasService
                     Id = new(statModificationId)
                 };
 
-                _bloodStats.TryAdd(statModificationId, unitStatBuff);
+                _bloodStats[statModificationId] = unitStatBuff;
 
                 // Core.Log.LogWarning($"GetBloodStatInfo - {statModificationId}|{_buffStats.Count}");
 
