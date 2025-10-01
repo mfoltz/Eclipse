@@ -11,6 +11,7 @@ using Stunlock.Core;
 using StunShared.UI;
 using System.Collections;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using TMPro;
 using Unity.Entities;
@@ -324,8 +325,11 @@ internal class CanvasService
     static readonly List<Coroutine> _managerCoroutines = [];
 
     static readonly Dictionary<UnitStatType, float> _lastSeen = [];
-    static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _weaponStats = [];
-    static readonly Dictionary<int, ModifyUnitStatBuff_DOTS> _bloodStats = [];
+    static readonly Dictionary<ulong, ModifyUnitStatBuff_DOTS> _weaponStats = [];
+    static readonly Dictionary<ulong, ModifyUnitStatBuff_DOTS> _bloodStats = [];
+
+    static bool ContainsMetadata(Dictionary<ulong, ModifyUnitStatBuff_DOTS> source, uint metadata) =>
+        source.Keys.Any(id => ModificationIds.ExtractMetadata(id) == metadata);
     public CanvasService(UICanvasBase canvas)
     {
         _canvasBase = canvas;
@@ -570,13 +574,13 @@ internal class CanvasService
     {
         if (!weaponEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var buffer)) return;
 
-        List<int> existingIds = [];
+        List<uint> existingIds = [];
 
         for (int i = buffer.Length - 1; i >= 0; i--)
         {
-            int id = buffer[i].Id.Id;
+            uint id = (uint)buffer[i].Id.Id;
 
-            if (id != 0 && !_weaponStats.ContainsKey(id))
+            if (id != 0 && !ContainsMetadata(_weaponStats, id))
             {
                 buffer.RemoveAt(i);
             }
@@ -588,7 +592,7 @@ internal class CanvasService
 
         foreach (var keyValuePair in _weaponStats)
         {
-            if (!existingIds.Contains(keyValuePair.Key))
+            if (!existingIds.Contains(ModificationIds.ExtractMetadata(keyValuePair.Key)))
             {
                 buffer.Add(keyValuePair.Value);
             }
@@ -623,9 +627,9 @@ internal class CanvasService
         if (!Core.LocalCharacter.TryGetBuff(_statsBuff, out Entity buffEntity)
             || !buffEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var buffer)) return;
 
-        var existingIds = new HashSet<int>();
+        var existingIds = new HashSet<uint>();
         for (int i = 0; i < buffer.Length; i++)
-            existingIds.Add(buffer[i].Id.Id);
+            existingIds.Add((uint)buffer[i].Id.Id);
 
         List<ModifyUnitStatBuff_DOTS> existingEtries = [];
         existingEtries.AddRange(_weaponStats.Values);
@@ -633,17 +637,17 @@ internal class CanvasService
 
         for (int i = buffer.Length - 1; i >= 0; i--)
         {
-            int id = buffer[i].Id.Id;
+            uint id = (uint)buffer[i].Id.Id;
             UnitStatType unitStatType = buffer[i].StatType;
-            if (!_weaponStats.ContainsKey(id)
-                && !_bloodStats.ContainsKey(id))
+            if (!ContainsMetadata(_weaponStats, id)
+                && !ContainsMetadata(_bloodStats, id))
                 buffer.RemoveAt(i);
             TryClearAttribute(unitStatType);
         }
 
         foreach (var entry in existingEtries)
         {
-            if (!existingIds.Contains(entry.Id.Id))
+            if (!existingIds.Contains((uint)entry.Id.Id))
             {
                 buffer.Add(entry);
             }
@@ -1041,7 +1045,7 @@ internal class CanvasService
                 float classMultiplier = ClassSynergy(weaponStat, LevelingState.Class, _classStatSynergies);
                 statValue *= (1 + _prestigeStatMultiplier * _expertisePrestige) * classMultiplier * ((float)_expertiseLevel / _expertiseMaxLevel);
                 float displayStatValue = statValue;
-                int statModificationId = ModificationIds.GenerateId(0, (int)weaponStat, statValue);
+                ulong statModificationId = ModificationIds.GenerateId(0, (int)weaponStat, statValue);
 
                 if (weaponStat.Equals(WeaponStatType.BonusMovementSpeed)
                     && Core.LocalCharacter.TryGetComponent(out Movement movement))
@@ -1059,7 +1063,7 @@ internal class CanvasService
                     IncreaseByStacks = false,
                     ValueByStacks = 0,
                     Priority = 0,
-                    Id = new(statModificationId)
+                    Id = new((int)ModificationIds.ExtractMetadata(statModificationId))
                 };
 
                 _weaponStats[statModificationId] = unitStatBuff;
@@ -1087,7 +1091,7 @@ internal class CanvasService
                 statValue *= (1 + _prestigeStatMultiplier * LegacyState.Prestige) * classMultiplier * ((float)LegacyState.Level / LegacyState.MaxLevel);
                 string displayString = $"<color=#00FFFF>{BloodStatTypeAbbreviations[bloodStat]}</color>: <color=#90EE90>{(statValue * 100).ToString("F0") + "%"}</color>";
 
-                int statModificationId = ModificationIds.GenerateId(1, (int)bloodStat, statValue);
+                ulong statModificationId = ModificationIds.GenerateId(1, (int)bloodStat, statValue);
 
                 ModifyUnitStatBuff_DOTS unitStatBuff = new()
                 {
@@ -1098,7 +1102,7 @@ internal class CanvasService
                     IncreaseByStacks = false,
                     ValueByStacks = 0,
                     Priority = 0,
-                    Id = new(statModificationId)
+                    Id = new((int)ModificationIds.ExtractMetadata(statModificationId))
                 };
 
                 _bloodStats[statModificationId] = unitStatBuff;
