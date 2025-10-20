@@ -1,7 +1,7 @@
 ﻿using Stunlock.Core;
 using System.Globalization;
 using UnityEngine;
-using static Eclipse.Services.CanvasService;
+using static Eclipse.Services.CanvasService.DataHUD;
 
 namespace Eclipse.Services;
 internal static class DataService
@@ -88,6 +88,25 @@ internal static class DataService
         SpellCriticalStrikeDamage
     }
 
+    /*
+    public enum WeaponStatType
+    {
+        None,
+        MaxHealth,
+        MovementSpeed,
+        PrimaryAttackSpeed,
+        PhysicalLifeLeech,
+        SpellLifeLeech,
+        PrimaryLifeLeech,
+        PhysicalPower,
+        SpellPower,
+        PhysicalCriticalStrikeChance,
+        PhysicalCriticalStrikeDamage,
+        SpellCriticalStrikeChance,
+        SpellCriticalStrikeDamage
+    }
+    */
+
     public static readonly Dictionary<WeaponStatType, string> WeaponStatTypeAbbreviations = new()
     {
         { WeaponStatType.MaxHealth, "HP" },
@@ -128,8 +147,8 @@ internal static class DataService
         { WeaponStatType.PhysicalLifeLeech, "percentage" },
         { WeaponStatType.SpellLifeLeech, "percentage" },
         { WeaponStatType.PrimaryLifeLeech, "percentage" },
-        { WeaponStatType.PhysicalPower, "integer" },
-        { WeaponStatType.SpellPower, "integer" },
+        { WeaponStatType.PhysicalPower, "decimal" },
+        { WeaponStatType.SpellPower, "decimal" },
         { WeaponStatType.PhysicalCriticalStrikeChance, "percentage" },
         { WeaponStatType.PhysicalCriticalStrikeDamage, "percentage" },
         { WeaponStatType.SpellCriticalStrikeChance, "percentage" },
@@ -140,18 +159,18 @@ internal static class DataService
     public enum BloodStatType
     {
         None,
-        HealingReceived, 
-        DamageReduction, 
-        PhysicalResistance, 
-        SpellResistance, 
+        HealingReceived,
+        DamageReduction,
+        PhysicalResistance,
+        SpellResistance,
         ResourceYield,
         ReducedBloodDrain,
         SpellCooldownRecoveryRate,
         WeaponCooldownRecoveryRate,
         UltimateCooldownRecoveryRate,
-        MinionDamage, 
-        AbilityAttackSpeed, 
-        CorruptionDamageReduction 
+        MinionDamage,
+        AbilityAttackSpeed,
+        CorruptionDamageReduction
     }
 
     public static readonly Dictionary<BloodStatType, string> BloodStatTypeAbbreviations = new()
@@ -161,7 +180,7 @@ internal static class DataService
         { BloodStatType.PhysicalResistance, "PR" },
         { BloodStatType.SpellResistance, "SR" },
         { BloodStatType.ResourceYield, "RY" },
-        { BloodStatType.ReducedBloodDrain, "RBD" },
+        { BloodStatType.ReducedBloodDrain, "BDR" },
         { BloodStatType.SpellCooldownRecoveryRate, "SCR" },
         { BloodStatType.WeaponCooldownRecoveryRate, "WCR" },
         { BloodStatType.UltimateCooldownRecoveryRate, "UCR" },
@@ -177,7 +196,7 @@ internal static class DataService
         { "PhysicalResistance", "PR" },
         { "SpellResistance", "SR" },
         { "ResourceYield", "RY" },
-        { "ReducedBloodDrain", "RBD" },
+        { "ReducedBloodDrain", "BDR" },
         { "SpellCooldownRecoveryRate", "SCR" },
         { "WeaponCooldownRecoveryRate", "WCR" },
         { "UltimateCooldownRecoveryRate", "UCR" },
@@ -475,19 +494,4 @@ internal static class DataService
         ShiftSpellData shiftSpellData = new(playerData[index]);
         _shiftSpellIndex = shiftSpellData.ShiftSpellIndex;
     }
-
-    /*
-    public static WeaponType GetWeaponTypeFromWeaponEntity(Entity weaponEntity)
-    {
-        if (weaponEntity == Entity.Null) return WeaponType.Unarmed;
-        string weaponCheck = weaponEntity.Read<PrefabGUID>().GetPrefabName();
-
-        return Enum.GetValues(typeof(WeaponType))
-            .Cast<WeaponType>()
-            .FirstOrDefault(type =>
-            weaponCheck.Contains(type.ToString(), StringComparison.OrdinalIgnoreCase) &&
-            !(type == WeaponType.Sword && weaponCheck.Contains("GreatSword", StringComparison.OrdinalIgnoreCase))
-            );
-    }
-    */
 }

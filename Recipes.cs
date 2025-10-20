@@ -1,4 +1,5 @@
-﻿using Eclipse.Services;
+﻿using Eclipse.Resources;
+using Eclipse.Services;
 using ProjectM;
 using ProjectM.Shared;
 using Stunlock.Core;
@@ -81,13 +82,13 @@ internal static class Recipes
     static readonly PrefabGUID _draculaShardContainer = new(1495743889);
 
     static readonly PrefabGUID _primalStygianRecipe = new(-259193408);
-    static readonly PrefabGUID _greaterStygian = new(576389135);
+    static readonly PrefabGUID _greaterStygian = new(576389135); // salvage for lesser stygian shards
     static readonly PrefabGUID _primalStygian = new(28358550);
 
     static readonly PrefabGUID _bloodCrystalRecipe = new(-597461125);  // using perfect topaz gemdust recipe for this
     static readonly PrefabGUID _crystal = new(-257494203);
     static readonly PrefabGUID _bloodCrystal = new(-1913156733);
-    static readonly PrefabGUID _greaterEssence = new(271594022);
+    static readonly PrefabGUID _greaterEssence = new(271594022); // salvage for normal blood essence
 
     static readonly List<PrefabGUID> _shardRecipes =
     [
@@ -150,8 +151,31 @@ internal static class Recipes
             });
         }
 
-        Entity recipeEntity = PrefabCollectionSystem._PrefabGuidToEntityMap[_primalStygianRecipe];
+        itemEntity = PrefabCollectionSystem._PrefabGuidToEntityMap[_greaterStygian];
 
+        if (!itemEntity.Has<Salvageable>())
+        {
+            itemEntity.AddWith((ref Salvageable salvageable) =>
+            {
+                salvageable.RecipeGUID = PrefabGUIDs.Recipe_CastleUpkeep_T02;
+                salvageable.SalvageFactor = 1f;
+                salvageable.SalvageTimer = 10f;
+            });
+        }
+
+        itemEntity = PrefabCollectionSystem._PrefabGuidToEntityMap[_greaterEssence];
+
+        if (!itemEntity.Has<Salvageable>())
+        {
+            itemEntity.AddWith((ref Salvageable salvageable) =>
+            {
+                salvageable.RecipeGUID = PrefabGUIDs.Recipe_CastleUpkeep_T02;
+                salvageable.SalvageFactor = 1f;
+                salvageable.SalvageTimer = 5f;
+            });
+        }
+
+        Entity recipeEntity = PrefabCollectionSystem._PrefabGuidToEntityMap[_primalStygianRecipe];
         recipeRequirementBuffer = recipeEntity.ReadBuffer<RecipeRequirementBuffer>();
 
         RecipeRequirementBuffer recipeRequirement = recipeRequirementBuffer[0];
@@ -209,7 +233,7 @@ internal static class Recipes
 
         recipeMap[_bloodCrystalRecipe] = recipeEntity.Read<RecipeData>();
 
-        if (CanvasService.Sprites.TryGetValue(PRIMAL_JEWEL, out Sprite jewelSprite))
+        if (CanvasService.DataHUD.Sprites.TryGetValue(PRIMAL_JEWEL, out Sprite jewelSprite))
         {
             ManagedItemData managedItemData = Core.SystemService.ManagedDataSystem.ManagedDataRegistry.GetOrDefault<ManagedItemData>(_itemJewelTemplate);
 

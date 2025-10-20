@@ -1,11 +1,46 @@
 ﻿using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using TMPro;
 using UnityEngine;
 using StringComparison = System.StringComparison;
 
 namespace Eclipse.Utilities;
 internal static class GameObjects
 {
+    public static TMP_SpriteAsset CreateSpriteAsset(Sprite sprite)
+    {
+        // Create the TMP_SpriteAsset ScriptableObject
+        var spriteAsset = ScriptableObject.CreateInstance<TMP_SpriteAsset>();
+        spriteAsset.name = sprite.name;
+
+        // Assign the atlas (can still be null in edge cases; that’s okay but warn/log if needed)
+        spriteAsset.spriteSheet = sprite.texture;
+
+        // Ensure list exists before using it
+        if (spriteAsset.spriteInfoList == null)
+            spriteAsset.spriteInfoList = new Il2CppSystem.Collections.Generic.List<TMP_Sprite>();
+        else
+            spriteAsset.spriteInfoList.Clear();
+
+        var info = new TMP_Sprite()
+        {
+            id = 0,
+            name = sprite.name,
+            hashCode = TMP_TextUtilities.GetSimpleHashCode(sprite.name),
+            sprite = sprite,
+            unicode = 0xE000,
+            x = sprite.rect.x,
+            y = sprite.rect.y,
+            width = sprite.rect.width,
+            height = sprite.rect.height,
+            pivot = sprite.pivot / sprite.rect.size
+        };
+
+        spriteAsset.spriteInfoList.Add(info);
+        spriteAsset.UpdateLookupTables();
+
+        return spriteAsset;
+    }
     public static GameObject FindTargetUIObject(Transform root, string targetName)
     {
         // Stack to hold the transforms to be processed

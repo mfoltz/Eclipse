@@ -1,10 +1,9 @@
-﻿using Bloodcraft.Resources;
-using Eclipse.Services;
+﻿using Eclipse.Services;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
+using ProjectM;
 using ProjectM.Network;
 using ProjectM.UI;
-using Stunlock.Core;
 using System.Collections;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -23,15 +22,12 @@ internal static class ClientChatSystemPatch
     static Entity LocalCharacter => Core.LocalCharacter;
     static Entity LocalUser => Core.LocalUser;
 
-    static readonly bool _shouldInitialize = Plugin.Leveling || Plugin.Expertise || Plugin.Legacies || Plugin.Quests || Plugin.Familiars || Plugin.Professions;
     public static bool _userRegistered = false;
     public static bool _pending = false;
 
     static readonly Regex _regexExtract = new(@"^\[(\d+)\]:");
     static readonly Regex _regexMAC = new(@";mac([^;]+)$");
-
-    static readonly WaitForSeconds _registrationDelay = new(2.5f);
-    static readonly WaitForSeconds _pendingDelay = new(10f);
+    static WaitForSeconds WaitForSeconds { get; } = new(2.5f);
 
     static readonly ComponentType[] _networkEventComponents =
     [
@@ -57,15 +53,21 @@ internal static class ClientChatSystemPatch
         ConfigsToClient
     }
 
-    static readonly PrefabGUID _familiarUnlockBuff = PrefabGUIDs.AB_HighLordSword_SelfStun_DeadBuff;
+    public static BufferLookup<ModifyUnitStatBuff_DOTS> ModifyUnitStatBuffLookup => _modifyUnitStatBuffLookup;
+    static BufferLookup<ModifyUnitStatBuff_DOTS> _modifyUnitStatBuffLookup;
 
-    [HarmonyBefore("gg.deca.Bloodstone")]
     [HarmonyPatch(typeof(ClientChatSystem), nameof(ClientChatSystem.OnUpdate))]
     [HarmonyPrefix]
     static void OnUpdatePrefix(ClientChatSystem __instance)
     {
-        if (!Core._initialized) return;
-        else if (!LocalCharacter.Exists() || !LocalUser.Exists()) return;
+        if (!Core._initialized)
+        {
+            return;
+        }
+        else if (!LocalCharacter.Exists() || !LocalUser.Exists())
+        {
+            return;
+        }
         else if (!_userRegistered && !_pending)
         {
             _pending = true;
@@ -107,34 +109,24 @@ internal static class ClientChatSystemPatch
             entities.Dispose();
         }
 
-        try
+        if (ModifyUnitStatBuffLookup.Equals(default(BufferLookup<ModifyUnitStatBuff_DOTS>)))
         {
-            if (LocalCharacter.HasBuff(_familiarUnlockBuff) && LocalCharacter.TryGetBuff(_familiarUnlockBuff, out Entity buffEntity))
-            {
-                buffEntity.Remove<UseCharacterHudProgressBar>();
-            }
+            _modifyUnitStatBuffLookup = __instance.GetBufferLookup<ModifyUnitStatBuff_DOTS>(false);
+            // Core.Log.LogWarning($"[ModifyUnitStatBuffLookup]");
         }
-        catch (Exception ex)
-        {
-            Core.Log.LogWarning($"Failed to check for familiar unlock buff! Error - {ex}");
-        }
+
+        ModifyUnitStatBuffLookup.Update(__instance);
     }
     static IEnumerator SendMessageDelayRoutine(string message, string modVersion)
     {
-        yield return _registrationDelay;
-
-        // if (_userRegistered) yield break;
-
+        yield return WaitForSeconds;
         SendMessage(NetworkEventSubType.RegisterUser, message, modVersion);
     }
     static void SendMessage(NetworkEventSubType subType, string message, string modVersion)
     {
         string intermediateMessage = $"[ECLIPSE][{(int)subType}]:{message}";
-        string messageWithMAC;
-
-        messageWithMAC = modVersion switch
+        string messageWithMAC = modVersion switch
         {
-            // V1_2_2 => $"{intermediateMessage};mac{GenerateMACV1_2_2(intermediateMessage)}",
             _ when modVersion.StartsWith(V1_3) => $"{intermediateMessage};mac{GenerateMACV1_3(intermediateMessage)}",
             _ => string.Empty
         };
@@ -167,17 +159,13 @@ internal static class ClientChatSystemPatch
                         List<string> playerData = DataService.ParseMessageString(_regexExtract.Replace(message, ""));
                         DataService.ParsePlayerData(playerData);
 
-                        // Core.Log.LogWarning($"Player data - {string.Join(", ", playerData)}");
-
-                        if (CanvasService._killSwitch)
-                        {
-                            CanvasService._killSwitch = false;
-                        }
+                        if (CanvasService.DataHUD._killSwitch)
+                            CanvasService.DataHUD._killSwitch = false;
 
                         if (CanvasService._canvasRoutine == null)
                         {
                             CanvasService._canvasRoutine = CanvasService.CanvasUpdateLoop().Start();
-                            CanvasService._active = true;
+                            CanvasService.DataHUD._active = true;
 
                             //  __instance.World.GetExistingSystemManaged<CustomPrefabSystem>().ReadyToInitialize += (CustomPrefabSystem.CustomPrefabRegistrationMethod)Manufacture;
                             // InputActionSystem inputActionSystem = Core.SystemService.InputActionSystem;
@@ -188,7 +176,6 @@ internal static class ClientChatSystemPatch
                     case (int)NetworkEventSubType.ConfigsToClient:
                         List<string> configData = DataService.ParseMessageString(_regexExtract.Replace(message, ""));
                         DataService.ParseConfigData(configData);
-
                         _userRegistered = true;
 
                         break;
@@ -251,5 +238,9 @@ internal static class ClientChatSystemPatch
     static void OnInputChange()
     {
         // Core.Log.LogWarning($"[OnInputChange]");
+    }
+    public static void Reset()
+    {
+        _modifyUnitStatBuffLookup = default;
     }
 }

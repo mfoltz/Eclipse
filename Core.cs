@@ -15,7 +15,7 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace Eclipse;
-internal class Core
+internal static class Core
 {
     static World _client;
     static SystemService _systemService;
@@ -37,12 +37,12 @@ internal class Core
     public static EntityManager EntityManager => _client.EntityManager;
     public static SystemService SystemService => _systemService ??= new(_client);
     public static ClientGameManager ClientGameManager => SystemService.ClientScriptMapper._ClientGameManager;
-    public static CanvasService CanvasService { get; internal set; }
+    public static CanvasService CanvasService { get; set; }
     public static ServerTime ServerTime => ClientGameManager.ServerTime;
     public static ManualLogSource Log => Plugin.LogInstance;
 
     static MonoBehaviour _monoBehaviour;
-    public static byte[] NEW_SHARED_KEY { get; internal set; }
+    public static byte[] NEW_SHARED_KEY { get; set; }
 
     public static bool _initialized = false;
     public static void Initialize(GameDataManager __instance)
@@ -54,6 +54,12 @@ internal class Core
         _ = new LocalizationService();
 
         NEW_SHARED_KEY = Convert.FromBase64String(SecretManager.GetNewSharedKey());
+
+        if (SystemService.PrefabCollectionSystem._PrefabGuidToEntityMap.TryGetValue(PrefabGUIDs.SetBonus_AllLeech_T09, out Entity prefabEntity)
+            && prefabEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var buffer))
+        {
+            buffer.Clear();
+        }
 
         _initialized = true;
     }

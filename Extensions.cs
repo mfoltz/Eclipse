@@ -167,9 +167,9 @@ internal static class Extensions
     {
         return EntityManager.HasComponent(entity, new(Il2CppType.Of<T>()));
     }
-    public static bool Has(this Entity entity, ComponentType componentType)
+    public static bool HasBuffer<T>(this Entity entity)
     {
-        return EntityManager.HasComponent(entity, componentType);
+        return EntityManager.HasBuffer<T>(entity);
     }
     public static string GetPrefabName(this PrefabGUID prefabGUID)
     {

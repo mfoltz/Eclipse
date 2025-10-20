@@ -1,6 +1,6 @@
 using Stunlock.Core;
 
-namespace Bloodcraft.Resources;
+namespace Eclipse.Resources;
 internal static class PrefabGUIDs
 {
     public static readonly PrefabGUID VM_VBlood_TEMPLATE = new(2075390218);
