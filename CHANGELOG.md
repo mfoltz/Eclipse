@@ -1,5 +1,5 @@
 `1.3.12`
-- attributes
+- attributes tab entries show stats from Bloodcraft in green with tinted backgrounds (grey expertise/red legacy) and can be clicked on to perform respective `.bl cst...` or `.wep cst...`.
 
 `1.3.11`
 - decreased update interval for more responsive UI elements (1s -> 0.1s), added config option if you prefer the old behavior; for noticeable effect requires Bloodcraft v1.11.14 or higher with fast updates enabled (Eclipsed = true)
