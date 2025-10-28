@@ -55,7 +55,6 @@ internal static class InitializationPatches
     [HarmonyPostfix]
     static void InitializeUIPostfix(InventorySubMenu menu)
     {
-        // Core.Log.LogWarning($"[InventorySubMenuMapper.InitializeUI]");
         _inventorySubMenu ??= menu;
     }
     public static void TryInitializeAttributeValues()
@@ -63,9 +62,6 @@ internal static class InitializationPatches
         if (!_attributesInitialized && _inventorySubMenu != null)
         {
             _attributesInitialized = CanvasService.InitializeHUD.InitializeAttributeValues(_inventorySubMenu);
-
-            //if (_attributesInitialized)
-            //    CanvasService.HandlePresentAttributes();
         }
     }
 
@@ -94,7 +90,9 @@ internal static class InitializationPatches
         CanvasService.DataHUD._abilityTooltipData = null;
         CanvasService.DataHUD._dailyQuestIcon = null;
         CanvasService.DataHUD._weeklyQuestIcon = null;
+
         _attributesInitialized = false;
+        _inventorySubMenu = null;
 
         CanvasService.ResetState();
         Core.Reset();

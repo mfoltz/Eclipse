@@ -1,6 +1,8 @@
 ﻿using Il2CppInterop.Runtime;
 using ProjectM;
 using ProjectM.Scripting;
+using ProjectM.UI;
+using StunShared.UI;
 using Unity.Entities;
 
 namespace Eclipse.Services;
@@ -25,6 +27,9 @@ internal class SystemService(World world)
 
     InputActionSystem _inputActionSystem;
     public InputActionSystem InputActionSystem => _inputActionSystem ??= GetSystem<InputActionSystem>();
+
+    UIDataSystem _uiDataSystem;
+    public UIDataSystem UIDataSystem => _uiDataSystem ??= GetSystem<UIDataSystem>();
     T GetSystem<T>() where T : ComponentSystemBase
     {
         return _world.GetExistingSystemManaged<T>() ?? throw new InvalidOperationException($"Failed to get {Il2CppType.Of<T>().FullName} from the Server...");

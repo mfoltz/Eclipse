@@ -26,7 +26,7 @@ internal static class ClientChatSystemPatch
     public static bool _pending = false;
 
     static readonly Regex _regexExtract = new(@"^\[(\d+)\]:");
-    static readonly Regex _regexMAC = new(@";mac([^;]+)$");
+    static readonly Regex _regexMAC = new(";mac([^;]+)$");
     static WaitForSeconds WaitForSeconds { get; } = new(2.5f);
 
     static readonly ComponentType[] _networkEventComponents =
@@ -77,7 +77,7 @@ internal static class ClientChatSystemPatch
                 string stringId = LocalUser.GetUser().PlatformId.ToString();
                 string message = $"{VERSION};{stringId}";
 
-                SendMessageDelayRoutine(message, VERSION).Start();
+                SendMessageDelayRoutine(__instance, message, VERSION).Start();
             }
             catch (Exception ex)
             {
@@ -109,18 +109,16 @@ internal static class ClientChatSystemPatch
             entities.Dispose();
         }
 
-        if (ModifyUnitStatBuffLookup.Equals(default(BufferLookup<ModifyUnitStatBuff_DOTS>)))
+        if (!_modifyUnitStatBuffLookup.Equals(default(BufferLookup<ModifyUnitStatBuff_DOTS>)))
         {
-            _modifyUnitStatBuffLookup = __instance.GetBufferLookup<ModifyUnitStatBuff_DOTS>(false);
-            // Core.Log.LogWarning($"[ModifyUnitStatBuffLookup]");
+            _modifyUnitStatBuffLookup.Update(__instance);
         }
-
-        ModifyUnitStatBuffLookup.Update(__instance);
     }
-    static IEnumerator SendMessageDelayRoutine(string message, string modVersion)
+    static IEnumerator SendMessageDelayRoutine(ClientChatSystem __instance, string message, string modVersion)
     {
         yield return WaitForSeconds;
         SendMessage(NetworkEventSubType.RegisterUser, message, modVersion);
+        _modifyUnitStatBuffLookup = __instance.GetBufferLookup<ModifyUnitStatBuff_DOTS>(false);
     }
     static void SendMessage(NetworkEventSubType subType, string message, string modVersion)
     {

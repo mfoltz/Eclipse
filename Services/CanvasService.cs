@@ -26,8 +26,6 @@ using static Eclipse.Services.CanvasService.UpdateHUD;
 using static Eclipse.Services.CanvasService.UtilitiesHUD;
 using static Eclipse.Services.DataService;
 using static Eclipse.Utilities.GameObjects;
-using static ProjectM.Gameplay.WarEvents.WarEventRegistrySystem;
-using static System.Net.Mime.MediaTypeNames;
 using Image = UnityEngine.UI.Image;
 
 namespace Eclipse.Services;
@@ -39,6 +37,8 @@ internal class CanvasService
         => Core.SystemService;
     static ManagedDataRegistry ManagedDataRegistry
         => SystemService.ManagedDataSystem.ManagedDataRegistry;
+    static UIDataSystem UIDataSystem
+        => SystemService.UIDataSystem;
     static Entity LocalCharacter
         => Core.LocalCharacter;
     static BufferLookup<ModifyUnitStatBuff_DOTS> ModifyUnitStatBuffLookup
@@ -134,7 +134,6 @@ internal class CanvasService
             {
                 try
                 {
-                    // if (AttributesInitialized)
                     UpdateTargetBuffer(ref buffer);
                     UpdateAttributes(ref buffer);
                 }
@@ -308,11 +307,14 @@ internal class CanvasService
                 UnityEngine.Object.Destroy(adaptiveElement.AdaptiveObject);
             }
         }
-        
+
         ObjectStates.Clear();
         ProfessionObjects.Clear();
         DataHUD.GameObjects.Clear();
         AttributeObjects.Clear();
+
+        _attributeObjectPrefab = null;
+
         BloodAttributeTexts.Clear();
         WeaponAttributeTexts.Clear();
         AdaptiveElements.Clear();
@@ -321,26 +323,36 @@ internal class CanvasService
     }
     public static class InitializeHUD
     {
-        //[Warning: Eclipse] Registered Weapon Attribute: MaxHealth
-        //[Warning:   Eclipse] Registered Weapon Attribute: PhysicalPower
-        //[Warning:   Eclipse] Registered Weapon Attribute: SpellPower
-        //[Warning:   Eclipse] Registered Weapon Attribute: MovementSpeed
-        //[Warning:   Eclipse] Registered Weapon Attribute: PrimaryAttackSpeed
-        //[Warning:   Eclipse] Registered Weapon Attribute: PhysicalCriticalStrikeChance
-        //[Warning:   Eclipse] Registered Weapon Attribute: PhysicalCriticalStrikeDamage
-        //[Warning:   Eclipse] Registered Weapon Attribute: SpellCriticalStrikeChance
-        //[Warning:   Eclipse] Registered Weapon Attribute: SpellCriticalStrikeDamage
-        //[Warning:   Eclipse] Registered Blood Attribute: MinionDamage
-        //[Warning:   Eclipse] Registered Blood Attribute: DamageReduction
-        //[Warning:   Eclipse] Registered Blood Attribute: HealingReceived
-        //[Warning:   Eclipse] Registered Weapon Attribute: PrimaryLifeLeech
-        //[Warning:   Eclipse] Registered Weapon Attribute: PhysicalLifeLeech
-        //[Warning:   Eclipse] Registered Weapon Attribute: SpellLifeLeech
-        //[Warning:   Eclipse] Registered Blood Attribute: ReducedBloodDrain
-        //[Warning:   Eclipse] Registered Blood Attribute: ResourceYield
-        //[Warning:   Eclipse] Registered Blood Attribute: WeaponCooldownRecoveryRate
-        //[Warning:   Eclipse] Registered Blood Attribute: SpellCooldownRecoveryRate
-        //[Warning:   Eclipse] Registered Blood Attribute: UltimateCooldownRecoveryRate
+        /*
+        static HashSet<UnitStatType> UnitStatAttributes { get; } =
+        [
+            // Weapon Stats
+            UnitStatType.MaxHealth,
+            UnitStatType.PhysicalPower,
+            UnitStatType.SpellPower,
+            UnitStatType.MovementSpeed,
+            UnitStatType.PrimaryAttackSpeed,
+            UnitStatType.PhysicalCriticalStrikeChance,
+            UnitStatType.PhysicalCriticalStrikeDamage,
+            UnitStatType.SpellCriticalStrikeChance,
+            UnitStatType.SpellCriticalStrikeDamage,
+            UnitStatType.PrimaryLifeLeech,
+            UnitStatType.PhysicalLifeLeech,
+            UnitStatType.SpellLifeLeech,
+            // Blood Stats
+            UnitStatType.MinionDamage,
+            UnitStatType.DamageReduction,
+            UnitStatType.HealingReceived,
+            UnitStatType.ReducedBloodDrain,
+            UnitStatType.ResourceYield,
+            UnitStatType.WeaponCooldownRecoveryRate,
+            UnitStatType.SpellCooldownRecoveryRate,
+            UnitStatType.UltimateCooldownRecoveryRate
+        ];
+
+        static readonly HashSet<UnitStatType> RegisteredAttributes = [];
+        */
+
         public static void InitializeUI()
         {
             if (_experienceBar)
@@ -432,30 +444,67 @@ internal class CanvasService
         }
         public static bool InitializeAttributeValues(InventorySubMenu inventorySubMenu)
         {
-            bool isInitialized = false;
-
             if (inventorySubMenu == null)
             {
+                // inventorySubMenu.PreInstantiatedAttributeEntries
+                // inventorySubMenu.AttributeSections
+                // inventorySubMenu.AttributeSettings
                 Core.Log.LogError("InventorySubMenu is null!");
+                return false;
             }
 
+            /*
+            try
+            {
+                // var attributePrefab = inventorySubMenu.AttributeEntryPrefab;
+                // var attributeKeys = inventorySubMenu.AttributeKeys;
+                var preInstantiated = inventorySubMenu.PreInstantiatedAttributeEntries;
+                var attributeSettings = inventorySubMenu.AttributeSettings;
+                // var parentConsole = inventorySubMenu.AttributesParentConsole;
+                // var selectionGroup = inventorySubMenu.AttributesSelectionGroup;
+
+                foreach (var attributeEntry in preInstantiated)
+                {
+                    Core.Log.LogWarning($"{attributeEntry.CurrentData.AttributeUIType}, {attributeEntry.CurrentData.TextKey.ToString}, {attributeEntry.CurrentData.TooltipDesc}");
+                }
+
+                foreach (var attributeSetting in attributeSettings.Settings)
+                {
+                    Core.Log.LogWarning($"{attributeSetting.Header.ToString}, {attributeSetting.Tooltip.ToString}, {attributeSetting.UnitStatType}");
+                }
+
+                // UIDataSystem._BottomBar_Keyboard, UIDataSystem._BottomBar_Gamepad
+
+                UIDataSystem.UI.BottomBar.InventorySlotsFillImage = _alchemyFill;
+                // UIDataSystem.UI.BottomBar.InventorySlotsInverted
+                UIDataSystem.UI.BottomBar.InventorySlotsText.ForceSet("Test");
+            }
+            catch (Exception ex)
+            {
+                Core.Log.LogError($"Failed to dump attributes: {ex}");
+            }
+            */
+
             Transform attributeSectionsParent = inventorySubMenu.AttributesParentConsole.transform.parent.parent.GetChild(4).GetChild(0).GetChild(2).GetChild(0);
-            // var attributeSections = attributeSectionsParent?.GetComponentsInChildren<CharacterAttributeSection>(false).Skip(2);
             var attributeSections = attributeSectionsParent?
-                .GetComponentsInChildren<CharacterAttributeSection>(false)
-                .Take(1)
-                .Concat(attributeSectionsParent.GetComponentsInChildren<CharacterAttributeSection>(false).Skip(2)
-                );
+                .GetComponentsInChildren<CharacterAttributeSection>(false).Take(1)
+                .Concat(attributeSectionsParent.GetComponentsInChildren<CharacterAttributeSection>(false).Skip(2));
+
+            // Core.Log.LogWarning($"Found {attributeSections.Count()} attribute sections!");
 
             foreach (CharacterAttributeSection section in attributeSections)
             {
                 GameObject attributesContainer = section.transform.FindChild("AttributesContainer").gameObject;
-                var characterAttributeEntries = attributesContainer.transform.GetComponentsInChildren<CharacterAttributeEntry>(false);
+                var attributeEntries = attributesContainer.transform.GetComponentsInChildren<CharacterAttributeEntry>(false);
                 int index = 0;
+
+                // Core.Log.LogWarning($"Found {attributeEntries.Length} attribute entries!");
+                if (!attributeEntries.Any())
+                    return false;
 
                 try
                 {
-                    foreach (CharacterAttributeEntry characterAttributeEntry in characterAttributeEntries)
+                    foreach (CharacterAttributeEntry characterAttributeEntry in attributeEntries)
                     {
                         string name = characterAttributeEntry.gameObject.name;
 
@@ -473,8 +522,9 @@ internal class CanvasService
                         GameObject gameObject = attributeObject.gameObject.transform.GetChild(0).gameObject;
                         GameObject attributeValue = gameObject.transform.GetChild(1).gameObject;
 
-                        if (_attributeObjectPrefab == null)
-                            _attributeObjectPrefab = attributeValue;
+                        // if (_attributeObjectPrefab ??= null)
+                            // _attributeObjectPrefab = attributeValue;
+                        _attributeObjectPrefab ??= attributeValue;
 
                         UnitStatType unitStatType = section.Attributes[index++].Type;
                         GameObject attributeValueClone = UIHelper.InstantiateGameObjectUnderAnchor(_attributeObjectPrefab, gameObject.transform);
@@ -485,8 +535,6 @@ internal class CanvasService
                             attributeValue, attributeValueClone,
                             // attributeTypeClone, attibuteSynergyClone,
                             unitStatType);
-
-                        isInitialized = true;
                     }
                 }
                 catch (Exception ex)
@@ -495,7 +543,7 @@ internal class CanvasService
                 }
             }
 
-            return isInitialized;
+            return true;
         }
     }
     public static class DataHUD
@@ -838,11 +886,8 @@ internal class CanvasService
         public static readonly HashSet<GameObject> AttributeObjects = [];
         public static GameObject _attributeObjectPrefab;
 
-        /*
-        public static Dictionary<UnitStatType, LocalizedText> CombinedAttributeTexts => BloodAttributeTexts
-            .Concat(WeaponAttributeTexts)
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        */
+        public static HashSet<LocalizedText> CombinedAttributeTexts
+            => [..BloodAttributeTexts.Values.Concat(WeaponAttributeTexts.Values)];
 
         public static readonly Dictionary<UnitStatType, LocalizedText> BloodAttributeTexts = [];
         public static readonly Dictionary<UnitStatType, LocalizedText> WeaponAttributeTexts = [];
@@ -862,18 +907,6 @@ internal class CanvasService
         }
         public static DynamicBuffer<ModifyUnitStatBuff_DOTS> TryGetSourceBuffer()
         {
-            /*
-            if (!LocalCharacter.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var buffer))
-            {
-                if (!LocalCharacter.Exists())
-                {
-                    return default;
-                }
-
-                return EntityManager.AddBuffer<ModifyUnitStatBuff_DOTS>(LocalCharacter);
-            }
-            */
-
             if (!ModifyUnitStatBuffLookup.TryGetBuffer(LocalCharacter, out var buffer))
                 return default;
 
@@ -891,82 +924,6 @@ internal class CanvasService
                 return;
 
             targetBuffer.CopyFrom(sourceBuffer);
-
-            /*
-            if (!Core.LocalCharacter.TryGetBuff(_statBuff, out Entity buffEntity)
-                || !buffEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var buffer)) return;
-
-            Dictionary<UnitStatType, ModifyUnitStatBuff_DOTS> unitStatBuffs = [];
-            HashSet<UnitStatType> activeUnitStats = [];
-            HashSet<int> presentIdentifiers = [];
-
-            foreach (var bloodStatBuff in _bloodStatBuffs)
-            {
-                if (!bloodStatBuff.Id.Id.Equals(0))
-                {
-                    unitStatBuffs[bloodStatBuff.StatType] = bloodStatBuff;
-                }
-            }
-
-            foreach (var weaponStatBuff in _weaponStatBuffs)
-            {
-                if (!weaponStatBuff.Id.Id.Equals(0))
-                {
-                    unitStatBuffs[weaponStatBuff.StatType] = weaponStatBuff;
-                }
-            }
-
-            for (int i = buffer.Length - 1; i >= 0; i--)
-            {
-                ModifyUnitStatBuff_DOTS unitStatBuff = buffer[i];
-                UnitStatType unitStatType = unitStatBuff.StatType;
-                int identifier = unitStatBuff.Id.Id;
-                bool isActive = unitStatBuffs.ContainsKey(unitStatType);
-                bool isPresent = presentIdentifiers.Contains(identifier);
-
-                if (!isActive)
-                {
-                    buffer.RemoveAt(i);
-                    TryClearAttribute(unitStatType);
-
-                    Core.Log.LogWarning($"Clearing Attribute: {unitStatBuff.Id.Id}, {unitStatBuff.StatType}, {unitStatBuff.Value}");
-                }
-                else if (!isPresent)
-                {
-                    activeUnitStats.Add(unitStatType);
-                }
-                else
-                {
-                    presentIdentifiers.Add(identifier);
-                }
-            }
-
-            foreach (var unitStat in activeUnitStats)
-            {
-                if (unitStatBuffs.TryGetValue(unitStat, out ModifyUnitStatBuff_DOTS statBuff))
-                {
-                    buffer.Add(statBuff);
-                    // TrySetAttribute(unitStat, statBuff.Value);
-
-                    Core.Log.LogWarning($"Setting Attribute: {statBuff.Id.Id}, {statBuff.StatType}, {statBuff.Value}");
-                }
-            }
-
-            foreach (var unitStatBuff in unitStatBuffs)
-            {
-                ModifyUnitStatBuff_DOTS statBuff = unitStatBuff.Value;
-                UnitStatType unitStatType = statBuff.StatType;
-                float value = statBuff.Value;
-
-                if (!pendingUnitStats.Contains(unitStatType))
-                {
-                    buffer.Add(statBuff);
-                    TrySetAttribute(unitStatType, value);
-
-                    Core.Log.LogWarning($"Setting Attribute: {statBuff.Id.Id}, {statBuff.StatType}, {statBuff.Value}");
-                }
-            }
-            */
         }
         public static void UpdateAttributes(ref DynamicBuffer<ModifyUnitStatBuff_DOTS> sourceBuffer)
         {
@@ -974,7 +931,7 @@ internal class CanvasService
             {
                 TryInitializeAttributeValues();
 
-                if (!ModifyUnitStatBuffLookup.TryGetBuffer(LocalCharacter, out var buffer))
+                if (AttributesInitialized && !ModifyUnitStatBuffLookup.TryGetBuffer(LocalCharacter, out var buffer))
                 {
                     buffer = EntityManager.AddBuffer<ModifyUnitStatBuff_DOTS>(LocalCharacter);
 
@@ -985,7 +942,27 @@ internal class CanvasService
                 return;
             }
 
-            HashSet<UnitStatType> activeUnitStats = [];
+            if (!sourceBuffer.IsCreated)
+                return;
+
+            foreach (var attributePair in BloodAttributeTexts)
+            {
+                // Core.Log.LogWarning($"Clearing Blood Attribute: {attributePair.Key}");
+                attributePair.Value.ForceSet("");
+            }
+
+            foreach (var attributePair in WeaponAttributeTexts)
+            {
+                // Core.Log.LogWarning($"Clearing Weapon Attribute: {attributePair.Key}");
+                attributePair.Value.ForceSet("");
+            }
+
+            /*
+            foreach (var attributePair in CombinedAttributeTexts)
+            {
+                attributePair.ForceSet("");
+            }
+            */
 
             for (int i = 0; i < sourceBuffer.Length; i++)
             {
@@ -995,30 +972,37 @@ internal class CanvasService
                 int identifier = unitStatBuff.Id.Id;
                 float value = unitStatBuff.Value;
 
-                if (identifier == 0)
+                if (identifier == 0 || value == 0 || float.IsNaN(value))
                 {
-                    Core.Log.LogWarning($"Skipping Attribute: {unitStatType}");
+                    // Core.Log.LogWarning($"Skipping Attribute [Zero - Id: {identifier}, Value: {value}, UnitStatType: {unitStatType}]");
                     continue; // might be due to not having full blood stats instead?
                 }
 
-                if(BloodAttributeTexts.TryGetValue(unitStatType, out LocalizedText localizedText))
+                if (BloodAttributeTexts.TryGetValue(unitStatType, out LocalizedText localizedText))
                 {
                     string text = FormatAttributeValue(unitStatType, value);
-                    // if (text != localizedText.GetText())
-                    Core.Log.LogWarning($"Setting Blood Attribute: {unitStatType} to {text}");
-                    localizedText.ForceSet(text);
-                    activeUnitStats.Add(unitStatType);
+                    if (text != localizedText.GetText())
+                    {
+                        // Core.Log.LogWarning($"Setting Blood Attribute: {unitStatType} to {text}");
+                        localizedText.ForceSet(text);
+                    }
+                    
+                    // activeUnitStats.Add(unitStatType);
                 }
                 else if (WeaponAttributeTexts.TryGetValue(unitStatType, out localizedText))
                 {
                     string text = FormatAttributeValue(unitStatType, value);
-                    // if (text != localizedText.GetText())
-                    Core.Log.LogWarning($"Setting Weapon Attribute: {unitStatType} to {text}");
-                    localizedText.ForceSet(text);
-                    activeUnitStats.Add(unitStatType);
+                    if (text != localizedText.GetText())
+                    {
+                        // Core.Log.LogWarning($"Setting Weapon Attribute: {unitStatType} to {text}");
+                        localizedText.ForceSet(text);
+                    }
+
+                    // activeUnitStats.Add(unitStatType);
                 }
             }
 
+            /*
             foreach (var attributePair in BloodAttributeTexts)
             {
                 if (!activeUnitStats.Contains(attributePair.Key))
@@ -1038,18 +1022,9 @@ internal class CanvasService
                     attributePair.Value.ForceSet(string.Empty);
                 }
             }
-
-            /*
-            foreach (var attributePair in CombinedAttributeTexts)
-            {
-                if (!activeUnitStats.Contains(attributePair.Key))
-                    // && !string.IsNullOrEmpty(attributePair.Value.GetText()))
-                {
-                    attributePair.Value.ForceSet(string.Empty);
-                }
-            }
             */
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetWeaponStatInfo(int i, string statType)
         {
@@ -2206,7 +2181,7 @@ internal class CanvasService
 
             LayoutElement layoutElement = attributeSpriteClone.GetComponent<LayoutElement>();
             LocalizedText localizedText = attributeSpriteClone.GetComponent<LocalizedText>();
-
+            
             layoutElement.flexibleWidth = 1f;
             attributeSpriteClone.transform.SetSiblingIndex(1);
 
@@ -2243,6 +2218,7 @@ internal class CanvasService
         {
             HorizontalLayoutGroup horizontalLayoutGroup = gameObject.GetComponent<HorizontalLayoutGroup>();
             TextMeshProUGUI textMeshPro = attributeValue.GetComponent<TextMeshProUGUI>();
+            Image image = attributeEntryObject.GetComponent<Image>();
 
             LayoutElement layoutElement = attributeValueClone.GetComponent<LayoutElement>();
             LocalizedText localizedText = attributeValueClone.GetComponent<LocalizedText>();
@@ -2253,12 +2229,14 @@ internal class CanvasService
                 && _bloodStatValues.ContainsKey(bloodStatType))
             {
                 ConfigureAttributeButton(simpleStunButton, $".bl cst {(int)bloodStatType}");
-                // attributeEntryObject Image color thing?
+                image.color = Color.red;
+
                 // ConfigureAttributeType(attributeTypeClone, _sprites["BloodTypeFrame"]);
                 // ConfigureAttributeSynergy(attibuteSynergyClone, _sprites["Attribute_TierIndicator_Fixed"]);
 
                 BloodAttributeTexts[unitStatType] = localizedText;
                 // CombinedAttributeTexts[unitStatType] = localizedText;
+
                 AttributeObjects.Add(attributeValueClone);
                 // _attributeObjects.Add(attributeTypeClone);
 
@@ -2270,21 +2248,25 @@ internal class CanvasService
                 && _weaponStatValues.ContainsKey(weaponStatType))
             {
                 ConfigureAttributeButton(simpleStunButton, $".wep cst {(int)weaponStatType}");
+                image.color = Color.grey;
+
                 // ConfigureAttributeType(attributeTypeClone, _sprites["BloodTypeIcon_Tiny_Warrior"]);
                 // ConfigureAttributeSynergy(attibuteSynergyClone, _sprites["Attribute_TierIndicator_Fixed"]);
 
                 WeaponAttributeTexts[unitStatType] = localizedText;
                 // CombinedAttributeTexts[unitStatType] = localizedText;
+
                 AttributeObjects.Add(attributeValueClone);
                 // _attributeObjects.Add(attributeTypeClone);
 
-                // if (_lastSeen.TryGetValue(unitStatType, out float statValue) && statValue != 0f) TrySetAttribute(unitStatType, statValue);
                 Core.Log.LogWarning($"Registered Weapon Attribute: {unitStatType}");
                 isValidStat = true;
             }
 
             if (!isValidStat)
-                AttributeObjects.Add(attributeValueClone); // need to refactor so not making extra objects per stat geez
+            {
+                AttributeObjects.Add(attributeValueClone);
+            }
 
             horizontalLayoutGroup.childForceExpandWidth = false;
             layoutElement.flexibleWidth = 1f;
@@ -2371,12 +2353,12 @@ internal class CanvasService
         {
             int firstSpaceIndex = input.IndexOf(' ');
             int secondSpaceIndex = input.IndexOf(' ', firstSpaceIndex + 1);
-            // bool isProperTitle = input.StartsWith("Sir") || input.StartsWith("Lord") || input.StartsWith("General") || input.StartsWith("Baron");
+            bool isProperTitle = input.StartsWith("Sir") || input.StartsWith("Lord") || input.StartsWith("General") || input.StartsWith("Baron");
 
             if (firstSpaceIndex > 0 && secondSpaceIndex > 0)
             {
-                // if (isProperTitle)
-                    // return input[..++firstSpaceIndex];
+                if (isProperTitle)
+                    return input[..secondSpaceIndex];
 
                 return input[..firstSpaceIndex];
             }
