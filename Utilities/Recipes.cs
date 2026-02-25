@@ -9,13 +9,17 @@ using System.Text;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Eclipse;
+namespace Eclipse.Utilities;
 internal static class Recipes
 {
-    static EntityManager EntityManager => Core.EntityManager;
-    static SystemService SystemService => Core.SystemService;
-    static PrefabCollectionSystem PrefabCollectionSystem => SystemService.PrefabCollectionSystem;
-    static GameDataSystem GameDataSystem => SystemService.GameDataSystem;
+    static EntityManager EntityManager
+        => Core.EntityManager;
+    static SystemService SystemService
+        => Core.SystemService;
+    static PrefabCollectionSystem PrefabCollectionSystem
+        => SystemService.PrefabCollectionSystem;
+    static GameDataSystem GameDataSystem
+        => SystemService.GameDataSystem;
 
     static readonly PrefabGUID _advancedGrinder = new(-178579946); // vampiric dust
     static readonly PrefabGUID _advancedFurnace = new(-222851985); // silver ingot
@@ -239,15 +243,11 @@ internal static class Recipes
 
             if (managedItemData != null && jewelSprite != null)
             {
+                AssetGuid nameGuid = HashStringToGuidString($"{managedItemData.Name.Key}{MyPluginInfo.PLUGIN_GUID}");
+                Localization._LocalizedStrings.TryAdd(nameGuid, "Primal Jewel");
+
+                managedItemData.Name = new(nameGuid);
                 managedItemData.Icon = jewelSprite;
-
-                AssetGuid nameGuid = HashStringToGuidString($"{managedItemData.Name.Key}{MyPluginInfo.PLUGIN_NAME}");
-                string outputName = "Primal Jewel";
-
-                Stunlock.Localization.Localization._LocalizedStrings.TryAdd(nameGuid, outputName);
-
-                LocalizationKey nameKey = new(nameGuid);
-                managedItemData.Name = nameKey;
             }
         }
 
@@ -364,9 +364,9 @@ internal static class Recipes
             }
 
             recipeRequirementBuffer = prefabEntity.ReadBuffer<RecipeRequirementBuffer>();
-            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = Prefabs.Item_Ingredient_Gemdust, Amount = 8 });
-            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = Prefabs.Item_Ingredient_Plant_PlantFiber, Amount = 16 });
-            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = Prefabs.Item_Ingredient_Pollen, Amount = 24 });
+            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = PrefabGUIDs.Item_Ingredient_Gemdust, Amount = 8 });
+            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = PrefabGUIDs.Item_Ingredient_Plant_PlantFiber, Amount = 16 });
+            recipeRequirementBuffer.Add(new RecipeRequirementBuffer { Guid = PrefabGUIDs.Item_Ingredient_Pollen, Amount = 24 });
         }
 
         if (DataService._primalCost.HasValue() && PrefabCollectionSystem._PrefabGuidToEntityMap.TryGetValue(DataService._primalCost, out Entity costEntity) && costEntity.Has<ItemData>())

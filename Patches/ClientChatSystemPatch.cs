@@ -1,4 +1,5 @@
 ﻿using Eclipse.Services;
+using Eclipse.Utilities;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
 using ProjectM;
@@ -77,7 +78,7 @@ internal static class ClientChatSystemPatch
                 string stringId = LocalUser.GetUser().PlatformId.ToString();
                 string message = $"{VERSION};{stringId}";
 
-                SendMessageDelayRoutine(__instance, message, VERSION).Start();
+                SendMessageDelayRoutine(__instance, message, VERSION).Run();
             }
             catch (Exception ex)
             {
@@ -100,6 +101,15 @@ internal static class ClientChatSystemPatch
                     {
                         HandleServerMessage(originalMessage);
                         EntityManager.DestroyEntity(entity);
+
+                        try
+                        {
+                            ShadowMatter.OnLoad();
+                        }
+                        catch (Exception ex)
+                        {
+                            Core.Log.LogWarning($"{ex}");
+                        }
                     }
                 }
             }
@@ -117,6 +127,7 @@ internal static class ClientChatSystemPatch
     static IEnumerator SendMessageDelayRoutine(ClientChatSystem __instance, string message, string modVersion)
     {
         yield return WaitForSeconds;
+
         SendMessage(NetworkEventSubType.RegisterUser, message, modVersion);
         _modifyUnitStatBuffLookup = __instance.GetBufferLookup<ModifyUnitStatBuff_DOTS>(false);
     }
@@ -162,7 +173,7 @@ internal static class ClientChatSystemPatch
 
                         if (CanvasService._canvasRoutine == null)
                         {
-                            CanvasService._canvasRoutine = CanvasService.CanvasUpdateLoop().Start();
+                            CanvasService._canvasRoutine = CanvasService.CanvasUpdateLoop().Run();
                             CanvasService.DataHUD._active = true;
 
                             //  __instance.World.GetExistingSystemManaged<CustomPrefabSystem>().ReadyToInitialize += (CustomPrefabSystem.CustomPrefabRegistrationMethod)Manufacture;

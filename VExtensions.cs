@@ -15,7 +15,7 @@ using UnityEngine;
 using static Eclipse.Services.LocalizationService;
 
 namespace Eclipse;
-internal static class Extensions
+internal static class VExtensions
 {
     static EntityManager EntityManager => Core.EntityManager;
     static ClientGameManager ClientGameManager => Core.ClientGameManager;
@@ -83,7 +83,7 @@ internal static class Extensions
         void* componentData = EntityManager.GetComponentDataRawRO(entity, typeIndex);
         return Marshal.PtrToStructure<T>(new IntPtr(componentData));
     }
-    public static unsafe bool TryGetBuffer<T>(this Entity entity, out DynamicBuffer<T> dynamicBuffer) where T : struct
+    public static bool TryGetBuffer<T>(this Entity entity, out DynamicBuffer<T> dynamicBuffer) where T : struct
     {
         if (GameManager_Shared.TryGetBuffer(EntityManager, entity, out dynamicBuffer))
         {
@@ -347,9 +347,7 @@ internal static class Extensions
     public static NetworkId GetNetworkId(this Entity entity)
     {
         if (entity.TryGetComponent(out NetworkId networkId))
-        {
             return networkId;
-        }
 
         return NetworkId.Empty;
     }
@@ -362,13 +360,15 @@ internal static class Extensions
     }
     public static PrefabGUID GetPrefabGUID(this Entity entity)
     {
-        if (entity.TryGetComponent(out PrefabGUID prefabGUID)) return prefabGUID;
+        if (entity.TryGetComponent(out PrefabGUID prefabGUID))
+            return prefabGUID;
 
         return PrefabGUID.Empty;
     }
     public static Entity GetUserEntity(this Entity character)
     {
-        if (character.TryGetComponent(out PlayerCharacter playerCharacter)) return playerCharacter.UserEntity;
+        if (character.TryGetComponent(out PlayerCharacter playerCharacter))
+            return playerCharacter.UserEntity;
 
         return Entity.Null;
     }
@@ -379,18 +379,27 @@ internal static class Extensions
 
         return User.Empty;
     }
+    public static Equipment GetEquipment(this Entity entity)
+    {
+        if (entity.TryGetComponent(out Equipment equipment))
+            return equipment;
+
+        return default;
+    }
+    public static CustomizationFeatures GetCustomizationFeatures(this Entity entity)
+    {
+        if (entity.TryGetComponent(out CustomizationFeatures customizationFeatures))
+            return customizationFeatures;
+
+        return default;
+    }
     public static bool HasBuff(this Entity entity, PrefabGUID buffPrefabGUID)
     {
         return GameManager_Shared.HasBuff(EntityManager, entity, buffPrefabGUID.ToIdentifier());
     }
     public static bool TryGetBuff(this Entity entity, PrefabGUID buffPrefabGUID, out Entity buffEntity)
     {
-        if (GameManager_Shared.TryGetBuff(EntityManager, entity, buffPrefabGUID.ToIdentifier(), out buffEntity))
-        {
-            return true;
-        }
-
-        return false;
+        return GameManager_Shared.TryGetBuff(EntityManager, entity, buffPrefabGUID.ToIdentifier(), out buffEntity);
     }
     public static float3 GetAimPosition(this Entity entity)
     {
@@ -441,12 +450,7 @@ internal static class Extensions
     }
     public static bool IsCustomSpawned(this Entity entity)
     {
-        if (entity.TryGetComponent(out IsMinion isMinion) && isMinion.Value)
-        {
-            return true;
-        }
-
-        return false;
+        return entity.TryGetComponent(out IsMinion isMinion) && isMinion.Value;
     }
     public static void Destroy(this Entity entity)
     {
@@ -459,25 +463,15 @@ internal static class Extensions
             Entity teamRefEntity = sourceTeamReference.Value._Value;
             int teamId = sourceTeam.Value;
 
-            entity.With((ref TeamReference teamReference) =>
-            {
-                teamReference.Value._Value = teamRefEntity;
-            });
-
-            entity.With((ref Team team) =>
-            {
-                team.Value = teamId;
-            });
+            entity.With((ref TeamReference teamReference) => teamReference.Value._Value = teamRefEntity);
+            entity.With((ref Team team) => team.Value = teamId);
         }
     }
     public static void SetFaction(this Entity entity, PrefabGUID factionPrefabGUID)
     {
         if (entity.Has<FactionReference>())
         {
-            entity.With((ref FactionReference factionReference) =>
-            {
-                factionReference.FactionGuid._Value = factionPrefabGUID;
-            });
+            entity.With((ref FactionReference factionReference) => factionReference.FactionGuid._Value = factionPrefabGUID);
         }
     }
     public static bool HasValue(this Entity entity)
@@ -488,13 +482,14 @@ internal static class Extensions
     {
         return ClientGameManager.IsAllies(entity, player);
     }
-    public static Coroutine Start(this IEnumerator routine)
+    public static Coroutine Run(this IEnumerator routine)
     {
         return Core.StartCoroutine(routine);
     }
     public static void Stop(this Coroutine routine)
     {
-        if (routine != null) Core.StopCoroutine(routine);
+        if (routine != null)
+            Core.StopCoroutine(routine);
     }
     public static Dictionary<TValue, TKey> Reverse<TKey, TValue>(this IDictionary<TKey, TValue> source)
     {

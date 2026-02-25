@@ -9,7 +9,7 @@ namespace Eclipse.Patches;
 internal static class InitializationPatches
 {
     static readonly bool _shouldInitialize = Plugin.Leveling || Plugin.Expertise || Plugin.Legacies || Plugin.Familiars || Plugin.Quests;
-    static bool _setCanvas = false;
+    static bool _setCanvas;
 
     [HarmonyPatch(typeof(GameDataManager), nameof(GameDataManager.OnUpdate))]
     [HarmonyPostfix]

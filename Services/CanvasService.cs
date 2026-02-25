@@ -205,7 +205,7 @@ internal class CanvasService
                         && abilityGroupState.SlotIndex == 3 // shift "slot" index
                         && _shiftRoutine == null) // if ability found on slot 3, activate shift loop
                     {
-                        _shiftRoutine = ShiftUpdateLoop().Start();
+                        _shiftRoutine = ShiftUpdateLoop().Run();
                         _shiftActive = true;
                     }
                 }
@@ -509,9 +509,7 @@ internal class CanvasService
                         string name = characterAttributeEntry.gameObject.name;
 
                         if (!name.EndsWith("(Clone)"))
-                        {
                             continue;
-                        }
 
                         GameObject attributeObject = characterAttributeEntry.transform.GetChild(0).gameObject;
                         SimpleStunButton simpleStunButton = attributeObject.GetComponent<SimpleStunButton>();

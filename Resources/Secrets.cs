@@ -17,7 +17,7 @@ internal static class SecretManager
     }
     static void LoadSecrets()
     {
-        var resourceName = "Eclipse.Resources.secrets.json"; // Replace with your actual namespace and file path
+        var resourceName = "Eclipse.Resources.secrets.json";
         var assembly = Assembly.GetExecutingAssembly();
 
         using var stream = assembly.GetManifestResourceStream(resourceName)

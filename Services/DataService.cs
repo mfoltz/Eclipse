@@ -1,4 +1,5 @@
-﻿using Stunlock.Core;
+﻿using Eclipse.Utilities;
+using Stunlock.Core;
 using System.Globalization;
 using UnityEngine;
 using static Eclipse.Services.CanvasService.DataHUD;

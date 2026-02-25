@@ -1,5 +1,6 @@
 ﻿using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using StringComparison = System.StringComparison;
@@ -220,6 +221,28 @@ internal static class GameObjects
         }
 
         return components;
+    }
+    public static GameObject FindByTransformPath(string scenePath)
+    {
+        foreach (GameObject gameObject in UnityEngine.Resources.FindObjectsOfTypeAll<GameObject>())
+        {
+            string gameObjectPath = GetTransformPath(gameObject.transform);
+            if (scenePath.Equals(gameObjectPath))
+                return gameObject;
+        }
+
+        return null;
+    }
+    static string GetTransformPath(Transform transform)
+    {
+        StringBuilder stringBuilder = new(transform.name);
+        while (transform.parent)
+        {
+            transform = transform.parent;
+            stringBuilder.Insert(0, transform.name + "/");
+        }
+
+        return stringBuilder.ToString();
     }
 }
 

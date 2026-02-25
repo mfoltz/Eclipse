@@ -1,5 +1,4 @@
 ﻿using Il2CppInterop.Runtime;
-using ProjectM;
 using ProjectM.Network;
 using Unity.Collections;
 using Unity.Entities;
