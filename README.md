@@ -16,6 +16,7 @@ Jairon O.; Odjit; Jera; Kokuren TCG and Gaming Shop; Rexxn; Eduardo G.; DirtyMik
 
 - Currently supports progress bars and info for leveling, legacies, expertise, familiars, professions, and quest progress. Also shows shift slot ability when being used with cooldown. Blood orb can be clicked to enable/disable UI.
 - Can disable individual UI elements via config or by clicking on your abilities (1-7, each disables and enables one UI element when clicked (clicking on the shift slot disables itself until reactivated by blood orb since can't click it after it's not there to toggle back).
+- Attributes tab entries now show stats from Bloodcraft in green with tinted backgrounds (grey=expertise, red=legacy) and can be clicked on to perform respective commands (`.bl cst...` or `.wep cst...`).
  
 ## Configuration
 
