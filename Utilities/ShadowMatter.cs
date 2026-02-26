@@ -1,5 +1,8 @@
 ﻿using Eclipse.Resources;
+using ProjectM;
+using ProjectM.UI;
 using Stunlock.Core;
+using Stunlock.Localization;
 using System.Collections;
 using System.Collections.Concurrent;
 using UnityEngine;
@@ -25,20 +28,23 @@ internal static class ShadowMatter
         [
 			new(PrefabGUIDs.Item_Weapon_Spear_T09_ShadowMatter,
                 PrefabGUIDs.EquipBuff_Weapon_Pollaxe_Ability01,
-                new("Part_Dracula_SwordFloor_PLACEHOLDER/DraculaSword_1H_Static")),
+                new("Part_Dracula_SwordFloor_PLACEHOLDER/DraculaSword_1H_Static"),
+                new("Valencia's Spear")),
 			new(PrefabGUIDs.Item_Weapon_GreatSword_T09_ShadowMatter,
                 PrefabGUIDs.EquipBuff_Weapon_Pollaxe_Ability02,
-                new("Model_Weapon_SanguineGreatsword_Legendary_Unholy_Prefab/SanguineGreatsword_2H_Standard/LOD00_GRP/SteelGreatsword_GEO", true)),
+                new("Model_Weapon_SanguineGreatsword_Legendary_Unholy_Prefab/SanguineGreatsword_2H_Standard/LOD00_GRP/SteelGreatsword_GEO", true),
+                new("Cassius' Greatsword")),
         ];
         public ReadOnlySpan<PrimalItem>.Enumerator GetEnumerator()
             => PrimalItemData.Span.GetEnumerator();
     }
-    public readonly struct PrimalItem(PrefabGUID itemWeapon, PrefabGUID equipBuff, PrimalShared.ModelData itemModel)
+    public readonly struct PrimalItem(PrefabGUID itemWeapon, PrefabGUID equipBuff, PrimalShared.ModelData itemModel, PrimalClient.AssetData? itemTooltip = null)
     {
         public readonly PrefabGUID ItemWeapon = itemWeapon;
         public readonly PrefabGUID EquipBuff = equipBuff;
 
         public readonly PrimalShared WeaponShared = new(itemWeapon.GuidHash, equipBuff.GuidHash, itemModel);
+        public readonly PrimalClient WeaponClient = new(itemTooltip);
         public readonly struct PrimalShared(int weaponGuid, int buffGuid, PrimalShared.ModelData modelData)
         {
             public readonly int WeaponGuid = weaponGuid;
@@ -51,6 +57,16 @@ internal static class ShadowMatter
                 public readonly bool HasMesh = hasMesh;
             }
         }
+        public readonly struct PrimalClient(PrimalClient.AssetData? itemTooltip = null)
+        {
+            public readonly AssetData ItemTooltip = itemTooltip ?? new();
+            public readonly struct AssetData(string itemName = default, string itemDesc = default)
+            {
+                public readonly LocalizationKey Name = !string.IsNullOrEmpty(itemName) ? Core.LocalizeString($"<color=red>{itemName}</color>") : LocalizationKey.Empty;
+                public readonly LocalizationKey Description = !string.IsNullOrEmpty(itemDesc) ? Core.LocalizeString($"{itemDesc}") : LocalizationKey.Empty;
+            }
+        }
+
     }
     internal static IEnumerator GatherShadows()
     {
@@ -61,6 +77,7 @@ internal static class ShadowMatter
             foreach (PrimalItem primalItem in Items)
             {
                 primalItem.TravelPath();
+                primalItem.ManageAssets();
             }
         }
     }
@@ -83,6 +100,21 @@ internal static class ShadowMatter
 
             if (material != null)
                 _managedAssets[primalItem.EquipBuff] = (material, null);
+        }
+    }
+    static void ManageAssets(this PrimalItem primalItem)
+    {
+        ManagedItemData itemData = primalItem.ItemWeapon.GetExistingDataManaged<ManagedItemData>();
+        LocalizationKey nameKey = primalItem.WeaponClient.ItemTooltip.Name;
+        LocalizationKey descKey = primalItem.WeaponClient.ItemTooltip.Description;
+
+        if (!nameKey.IsEmpty)
+            itemData?.Name = nameKey;
+
+        if (!descKey.IsEmpty)
+        {
+            LocalizedStringBuilderBase localizedString = itemData.Description;
+            localizedString.Key = descKey;
         }
     }
     internal static void OnLoad()

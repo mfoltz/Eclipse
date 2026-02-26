@@ -393,6 +393,15 @@ internal static class VExtensions
 
         return default;
     }
+    public static T GetExistingDataManaged<T>(this PrefabGUID prefabGuid) where T : class
+    {
+        if (Core.SystemService.ManagedDataSystem.ManagedDataRegistry.TryGet(prefabGuid, out T managedData))
+        {
+            return managedData;
+        }
+
+        return default;
+    }
     public static bool HasBuff(this Entity entity, PrefabGUID buffPrefabGUID)
     {
         return GameManager_Shared.HasBuff(EntityManager, entity, buffPrefabGUID.ToIdentifier());
