@@ -2,8 +2,10 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Eclipse.Resources;
 using Eclipse.Services;
-using Eclipse.Utilities;
+using Il2CppInterop.Runtime;
 using ProjectM;
+using ProjectM.Hybrid;
+using ProjectM.Network;
 using ProjectM.Physics;
 using ProjectM.Scripting;
 using ProjectM.UI;
@@ -12,6 +14,7 @@ using Stunlock.Localization;
 using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 using static Eclipse.Utilities.ShadowMatter;
@@ -93,21 +96,23 @@ internal static class Core
     }
     public static void StopCoroutine(Coroutine routine)
     {
-        if (_monoBehaviour == null) return;
+        if (_monoBehaviour == null)
+            return;
+
         _monoBehaviour.StopCoroutine(routine);
     }
-    public static void LogEntity(World world, Entity entity)
+    public static void DumpEntity(this Entity entity)
     {
         Il2CppSystem.Text.StringBuilder sb = new();
 
         try
         {
-            EntityDebuggingUtility.DumpEntity(world, entity, true, sb);
+            EntityDebuggingUtility.DumpEntity(_client, entity, true, sb);
             Log.LogInfo($"Entity Dump:\n{sb.ToString()}");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Log.LogWarning($"Error dumping entity: {e.Message}");
+            Log.LogWarning($"{ex}");
         }
     }
     static AssetGuid GetAssetGuid(string textString)
@@ -124,14 +129,32 @@ internal static class Core
 
         if (Localization.Initialized)
         {
-            Localization._LocalizedStrings.TryAdd(assetGuid, text);
+            if (!Localization._LocalizedStrings.TryAdd(assetGuid, text))
+                Localization._LocalizedStrings[assetGuid] = text;
+
             return new(assetGuid);
         }
         else
         {
-            Log.LogWarning("Stunlock.Localization not initialized yet!");
+            Log.LogWarning("Stunlock.Localization isn't ready yet!");
         }
 
         return LocalizationKey.Empty;
     }
+    public static EntityQuery BuildEntityQuery(
+        this EntityManager entityManager,
+        ComponentType[] all,
+        EntityQueryOptions options)
+    {
+        var builder = new EntityQueryBuilder(Allocator.Temp);
+
+        foreach (var componentType in all)
+            builder.AddAll(componentType);
+
+        builder.WithOptions(options);
+
+        return entityManager.CreateEntityQuery(ref builder);
+    }
+    public static Il2CppSystem.Type Il2CppTypeOf<T>()
+        => Il2CppType.Of<T>();
 }

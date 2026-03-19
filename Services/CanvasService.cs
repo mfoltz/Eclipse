@@ -565,7 +565,7 @@ internal class CanvasService
             {1, "I"}
         };
 
-        public static readonly List<string> SpriteNames =
+        public static readonly HashSet<string> SpriteNames =
         [
             "Attribute_TierIndicator_Fixed", // class stat synergy?
             "BloodTypeFrame",                // bl
@@ -984,7 +984,7 @@ internal class CanvasService
                         // Core.Log.LogWarning($"Setting Blood Attribute: {unitStatType} to {text}");
                         localizedText.ForceSet(text);
                     }
-                    
+
                     // activeUnitStats.Add(unitStatType);
                 }
                 else if (WeaponAttributeTexts.TryGetValue(unitStatType, out localizedText))
@@ -2369,7 +2369,7 @@ internal class CanvasService
         }
         public static void FindSprites()
         {
-            Il2CppArrayBase<Sprite> sprites = UnityEngine.Resources.FindObjectsOfTypeAll<Sprite>();
+            var sprites = UnityEngine.Resources.FindObjectsOfTypeAll<Sprite>();
 
             foreach (Sprite sprite in sprites)
             {

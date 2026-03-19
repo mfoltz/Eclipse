@@ -6,6 +6,7 @@ using ProjectM.Network;
 using ProjectM.Scripting;
 using ProjectM.Shared;
 using Stunlock.Core;
+using Stunlock.Localization;
 using System.Collections;
 using System.Runtime.InteropServices;
 using Unity.Entities;
@@ -17,20 +18,82 @@ using static Eclipse.Services.LocalizationService;
 namespace Eclipse;
 internal static class VExtensions
 {
-    static EntityManager EntityManager => Core.EntityManager;
-    static ClientGameManager ClientGameManager => Core.ClientGameManager;
-    static SystemService SystemService => Core.SystemService;
-    static PrefabCollectionSystem PrefabCollectionSystem => SystemService.PrefabCollectionSystem;
+    static EntityManager EntityManager
+        => Core.EntityManager;
+    static ClientGameManager ClientGameManager
+        => Core.ClientGameManager;
+    static PrefabCollectionSystem PrefabCollectionSystem
+        => Core.SystemService.PrefabCollectionSystem;
 
     const string EMPTY_KEY = "LocalizationKey.Empty";
+    const string PREFIX = "Entity(";
+    const int LENGTH = 7;
 
     public delegate void WithRefHandler<T>(ref T item);
+
     public static void With<T>(this Entity entity, WithRefHandler<T> action) where T : struct
     {
-        T item = entity.ReadRW<T>();
+        if (!entity.Has<T>())
+            return;
+
+        T item = entity.Read<T>();
         action(ref item);
 
         EntityManager.SetComponentData(entity, item);
+    }
+    public static void WithEdit<T>(this Entity entity, int index, WithRefHandler<T> action) where T : struct
+    {
+        if (!entity.TryGetBuffer<T>(out var buffer))
+        {
+            Core.Log.LogWarning($"Entity is missing DynamicBuffer<{typeof(T)}>!");
+            return;
+        }
+
+        if (!buffer.IsIndexWithinRange(index))
+        {
+            Core.Log.LogWarning($"Index ({index}) OoR ({index}/{buffer.Length}) for DynamicBuffer<{typeof(T)}>!");
+            return;
+        }
+
+        var element = buffer[index];
+        action(ref element);
+        buffer[index] = element;
+    }
+    public static void WithInsert<T>(this Entity entity, int index, T element) where T : struct
+    {
+        if (!entity.TryGetBuffer<T>(out var buffer))
+        {
+            Core.Log.LogWarning($"Entity is missing DynamicBuffer<{typeof(T)}>!");
+            return;
+        }
+
+        if (!buffer.IsIndexWithinRange(index))
+        {
+            Core.Log.LogWarning($"Index ({index}) OoR ({index}/{buffer.Length}) for DynamicBuffer<{typeof(T)}>!");
+            return;
+        }
+
+        buffer.Insert(index, element);
+    }
+    public static void WithAdd<T>(this Entity entity, T element) where T : struct
+    {
+        if (!entity.TryGetBuffer<T>(out var buffer))
+        {
+            Core.Log.LogWarning($"Entity is missing DynamicBuffer<{typeof(T)}>!");
+            return;
+        }
+
+        buffer.Add(element);
+    }
+    public static void WithClear<T>(this Entity entity) where T : struct
+    {
+        if (!entity.TryGetBuffer<T>(out var buffer))
+        {
+            Core.Log.LogWarning($"Entity is missing DynamicBuffer<{typeof(T)}>!");
+            return;
+        }
+
+        buffer.Clear();
     }
     public static void AddWith<T>(this Entity entity, WithRefHandler<T> action) where T : struct
     {
@@ -41,47 +104,22 @@ internal static class VExtensions
 
         entity.With(action);
     }
-    public unsafe static void Write<T>(this Entity entity, T componentData) where T : struct
+    public static void Write<T>(this Entity entity, T componentData) where T : struct
     {
-        ComponentType componentType = new(Il2CppType.Of<T>());
-        TypeIndex typeIndex = componentType.TypeIndex;
+        if (!entity.Has<T>())
+            return;
 
-        byte[] byteArray = StructureToByteArray(componentData);
-        int size = Marshal.SizeOf<T>();
-
-        fixed (byte* byteData = byteArray)
-        {
-            EntityManager.SetComponentDataRaw(entity, typeIndex, byteData, size);
-        }
+        EntityManager.SetComponentData(entity, componentData);
     }
-    static byte[] StructureToByteArray<T>(T structure) where T : struct
+    public static T Read<T>(this Entity entity) where T : struct
     {
-        int size = Marshal.SizeOf(structure);
-        byte[] byteArray = new byte[size];
-
-        IntPtr ptr = Marshal.AllocHGlobal(size);
-        Marshal.StructureToPtr(structure, ptr, true);
-
-        Marshal.Copy(ptr, byteArray, 0, size);
-        Marshal.FreeHGlobal(ptr);
-
-        return byteArray;
+        return EntityManager.TryGetComponentData<T>(entity, out T componentData)
+            ? componentData : default;
     }
-    unsafe static T ReadRW<T>(this Entity entity) where T : struct
+    public static T Lookup<T>(this Entity entity, ref ComponentLookup<T> componentLookup)
     {
-        ComponentType componentType = new(Il2CppType.Of<T>());
-        TypeIndex typeIndex = componentType.TypeIndex;
-
-        void* componentData = EntityManager.GetComponentDataRawRW(entity, typeIndex);
-        return Marshal.PtrToStructure<T>(new IntPtr(componentData));
-    }
-    public unsafe static T Read<T>(this Entity entity) where T : struct
-    {
-        ComponentType componentType = new(Il2CppType.Of<T>());
-        TypeIndex typeIndex = componentType.TypeIndex;
-
-        void* componentData = EntityManager.GetComponentDataRawRO(entity, typeIndex);
-        return Marshal.PtrToStructure<T>(new IntPtr(componentData));
+        return componentLookup.TryGetComponent(entity, out T componentData)
+            ? componentData : default;
     }
     public static bool TryGetBuffer<T>(this Entity entity, out DynamicBuffer<T> dynamicBuffer) where T : struct
     {
@@ -100,32 +138,6 @@ internal static class VExtensions
     public static DynamicBuffer<T> AddBuffer<T>(this Entity entity) where T : struct
     {
         return EntityManager.AddBuffer<T>(entity);
-    }
-    public unsafe static void* GetComponentData(this Entity entity, TypeIndex typeIndex)
-    {
-        return EntityManager.GetComponentDataRawRO(entity, typeIndex);
-    }
-    public unsafe static void SetComponentData(this Entity entity, TypeIndex typeIndex, void* byteData, int size)
-    {
-        EntityManager.SetComponentDataRaw(entity, typeIndex, byteData, size);
-    }
-    public unsafe static void* GetBufferData(this Entity entity, TypeIndex typeIndex)
-    {
-        return EntityManager.GetBufferRawRO(entity, typeIndex);
-    }
-    public static int GetBufferLength(this Entity entity, TypeIndex typeIndex)
-    {
-        return EntityManager.GetBufferLength(entity, typeIndex);
-    }
-    public static void SetBufferData<T>(Entity prefabSource, T[] bufferArray) where T : struct
-    {
-        DynamicBuffer<T> buffer = prefabSource.Has<T>() ? prefabSource.ReadBuffer<T>() : prefabSource.AddBuffer<T>();
-        buffer.Clear();
-
-        foreach (T element in bufferArray)
-        {
-            buffer.Add(element);
-        }
     }
     public static bool TryGetComponent<T>(this Entity entity, out T componentData) where T : struct
     {
@@ -152,20 +164,9 @@ internal static class VExtensions
 
         return false;
     }
-    public static bool TryRemoveComponent<T>(this Entity entity) where T : struct
-    {
-        if (entity.Has<T>())
-        {
-            entity.Remove<T>();
-
-            return true;
-        }
-
-        return false;
-    }
     public static bool Has<T>(this Entity entity)
     {
-        return EntityManager.HasComponent(entity, new(Il2CppType.Of<T>()));
+        return EntityManager.HasComponent<T>(entity);
     }
     public static bool HasBuffer<T>(this Entity entity)
     {
@@ -257,7 +258,11 @@ internal static class VExtensions
     }
     public static Entity GetPrefabEntity(this Entity entity)
     {
-        return ClientGameManager.GetPrefabEntity(entity.Read<PrefabGUID>());
+        return GameManager_Shared.GetPrefabEntity(PrefabCollectionSystem._PrefabLookupMap, entity.GetPrefabGUID());
+    }
+    public static Entity GetPrefabEntity(this PrefabGUID prefabGuid)
+    {
+        return prefabGuid.HasValue() ? GameManager_Shared.GetPrefabEntity(PrefabCollectionSystem._PrefabLookupMap, prefabGuid) : Entity.Null;
     }
     public static Entity GetSpellTarget(this Entity entity)
     {
@@ -285,9 +290,6 @@ internal static class VExtensions
     {
         return entity.HasValue() && entity.IndexWithinCapacity() && EntityManager.Exists(entity);
     }
-
-    const string PREFIX = "Entity(";
-    const int LENGTH = 7;
     public static bool IndexWithinCapacity(this Entity entity)
     {
         string entityStr = entity.ToString();
@@ -487,7 +489,7 @@ internal static class VExtensions
     {
         return entity != Entity.Null;
     }
-    public static bool IsAllied(this Entity entity, Entity player)
+    public static bool IsAllies(this Entity entity, Entity player)
     {
         return ClientGameManager.IsAllies(entity, player);
     }
@@ -520,4 +522,22 @@ internal static class VExtensions
 
         return false;
     }
+    public static LocalizationKey LocalizeText(this string text)
+        => Core.LocalizeString(text);
+    public static void PreloadSprite(this string iconName)
+        => CanvasService.DataHUD.SpriteNames.Add(iconName);
+    public static Sprite GetExistingSprite(this string iconName)
+    {
+        return CanvasService.DataHUD.Sprites.TryGetValue(iconName, out Sprite sprite) ? sprite : default;
+    }
+    public static bool IsEmpty(this string str)
+    {
+        return string.IsNullOrEmpty(str);
+    }
+    public static bool HasValue<T>(this T obj) where T : class
+        => obj != null;
+    public static bool HasValue(this UnityEngine.Object obj)
+        => obj;
+
+    // public static unsafe
 }

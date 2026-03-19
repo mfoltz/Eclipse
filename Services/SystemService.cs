@@ -1,5 +1,6 @@
 ﻿using Il2CppInterop.Runtime;
 using ProjectM;
+using ProjectM.Hybrid;
 using ProjectM.Scripting;
 using ProjectM.UI;
 using StunShared.UI;
@@ -30,6 +31,12 @@ internal class SystemService(World world)
 
     UIDataSystem _uiDataSystem;
     public UIDataSystem UIDataSystem => _uiDataSystem ??= GetSystem<UIDataSystem>();
+
+    HybridEquipmentSystem _hybridEquipmentSystem;
+    public HybridEquipmentSystem HybridEquipmentSystem => _hybridEquipmentSystem ??= GetSystem<HybridEquipmentSystem>();
+
+    HybridModelSystem _hybridModelSystem;
+    public HybridModelSystem HybridModelSystem => _hybridModelSystem ??= GetSystem<HybridModelSystem>();
     T GetSystem<T>() where T : ComponentSystemBase
     {
         return _world.GetExistingSystemManaged<T>() ?? throw new InvalidOperationException($"Failed to get {Il2CppType.Of<T>().FullName} from the Server...");

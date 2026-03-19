@@ -54,7 +54,9 @@ internal static class ClientChatSystemPatch
         ConfigsToClient
     }
 
-    public static BufferLookup<ModifyUnitStatBuff_DOTS> ModifyUnitStatBuffLookup => _modifyUnitStatBuffLookup;
+    public static BufferLookup<ModifyUnitStatBuff_DOTS> ModifyUnitStatBuffLookup
+        => _modifyUnitStatBuffLookup;
+
     static BufferLookup<ModifyUnitStatBuff_DOTS> _modifyUnitStatBuffLookup;
 
     [HarmonyPatch(typeof(ClientChatSystem), nameof(ClientChatSystem.OnUpdate))]
@@ -105,6 +107,15 @@ internal static class ClientChatSystemPatch
                         try
                         {
                             ShadowMatter.OnLoad();
+                        }
+                        catch (Exception ex)
+                        {
+                            Core.Log.LogWarning($"{ex}");
+                        }
+
+                        try
+                        {
+                            // ShadowMatter.LoadAssets();
                         }
                         catch (Exception ex)
                         {
