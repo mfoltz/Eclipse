@@ -1,3 +1,6 @@
+`1.3.13`
+- primal weapons
+
 `1.3.12`
 - attributes
 
