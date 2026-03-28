@@ -205,6 +205,21 @@ internal static class DataService
         { "AbilityAttackSpeed", "AAS" },
         { "CorruptionDamageReduction", "CDR" }
     };
+    public static readonly Dictionary<BloodStatType, string> BloodStatFormats = new()
+    {
+        { BloodStatType.HealingReceived, "percentage" },
+        { BloodStatType.DamageReduction, "percentage" },
+        { BloodStatType.PhysicalResistance, "percentage" },
+        { BloodStatType.SpellResistance, "percentage" },
+        { BloodStatType.ResourceYield, "percentage" },
+        { BloodStatType.ReducedBloodDrain, "percentage" },
+        { BloodStatType.SpellCooldownRecoveryRate, "percentage" },
+        { BloodStatType.WeaponCooldownRecoveryRate, "percentage" },
+        { BloodStatType.UltimateCooldownRecoveryRate, "percentage" },
+        { BloodStatType.MinionDamage, "percentage" },
+        { BloodStatType.AbilityAttackSpeed, "percentage" },
+        { BloodStatType.CorruptionDamageReduction, "percentage" }
+    };
 
     public static Dictionary<FamiliarStatType, float> _familiarStatValues = [];
     public enum FamiliarStatType

@@ -9,6 +9,7 @@ using ProjectM.UI;
 using Stunlock.Core;
 using StunShared.UI;
 using System.Collections;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -1065,7 +1066,7 @@ internal class CanvasService
                     float classMultiplier = ClassSynergy(bloodStat, _classType, _classStatSynergies);
                     statValue *= (1 + (_prestigeStatMultiplier * _legacyPrestige)) * classMultiplier * ((float)_legacyLevel / _legacyMaxLevel);
 
-                    string displayString = $"<color=#00FFFF>{BloodStatTypeAbbreviations[bloodStat]}</color>: <color=#90EE90>{(statValue * 100).ToString("F0") + "%"}</color>";
+                    string displayString = FormatBloodStatBar(bloodStat, statValue);
                     int statModificationId = ModificationIds.GenerateId(1, (int)bloodStat, statValue);
                     UnitStatType unitStatType = (UnitStatType)Enum.Parse(typeof(UnitStatType), bloodStat.ToString());
 
@@ -2295,21 +2296,48 @@ internal class CanvasService
 
             return 1f;
         }
+        private const string StatFormatInteger = "integer";
+        private const string StatFormatDecimal = "decimal";
+        private const string StatFormatPercentage = "percentage";
+        private static string FormatStatValue(float statValue, string format)
+        {
+            return format switch
+            {
+                StatFormatInteger => ((int)statValue).ToString(CultureInfo.InvariantCulture),
+                StatFormatDecimal => statValue.ToString("0.#", CultureInfo.InvariantCulture),
+                StatFormatPercentage => (statValue * 100f).ToString("0.#", CultureInfo.InvariantCulture) + "%",
+                _ => statValue.ToString(CultureInfo.InvariantCulture),
+            };
+        }
+        private static string GetAbbreviation<T>(T statType, IReadOnlyDictionary<T, string> abbreviations) where T : struct, Enum
+        {
+            return abbreviations.TryGetValue(statType, out string abbreviation)
+                ? abbreviation
+                : statType.ToString();
+        }
         public static string FormatWeaponStatBar(WeaponStatType weaponStat, float statValue)
         {
-            string statValueString = WeaponStatFormats[weaponStat] switch
-            {
-                "integer" => ((int)statValue).ToString(),
-                "decimal" => statValue.ToString("0.#"),
-                "percentage" => (statValue * 100f).ToString("0.#") + "%",
-                _ => statValue.ToString(),
-            };
+            string format = WeaponStatFormats.TryGetValue(weaponStat, out string weaponFormat)
+                ? weaponFormat
+                : StatFormatPercentage;
+            string statValueString = FormatStatValue(statValue, format);
+            string abbreviation = GetAbbreviation(weaponStat, WeaponStatTypeAbbreviations);
 
-            return $"<color=#00FFFF>{WeaponStatTypeAbbreviations[weaponStat]}</color>: <color=#90EE90>{statValueString}</color>";
+            return $"<color=#00FFFF>{abbreviation}</color>: <color=#90EE90>{statValueString}</color>";
+        }
+        public static string FormatBloodStatBar(BloodStatType bloodStat, float statValue)
+        {
+            string format = BloodStatFormats.TryGetValue(bloodStat, out string bloodFormat)
+                ? bloodFormat
+                : StatFormatPercentage;
+            string statValueString = FormatStatValue(statValue, format);
+            string abbreviation = GetAbbreviation(bloodStat, BloodStatTypeAbbreviations);
+
+            return $"<color=#00FFFF>{abbreviation}</color>: <color=#90EE90>{statValueString}</color>";
         }
         public static string FormatAttributeValue(UnitStatType unitStatType, float statValue)
         {
-            string statString = $"<color=#90EE90>+{statValue * 100f:F0}%</color>";
+            string statString = $"<color=#90EE90>+{FormatStatValue(statValue, StatFormatPercentage)}</color>";
 
             if (Enum.TryParse(unitStatType.ToString(), out WeaponStatType weaponStatType))
                 statString = FormatWeaponAttribute(weaponStatType, statValue);
@@ -2318,13 +2346,10 @@ internal class CanvasService
         }
         public static string FormatWeaponAttribute(WeaponStatType weaponStat, float statValue)
         {
-            string statValueString = WeaponStatFormats[weaponStat] switch
-            {
-                "integer" => ((int)statValue).ToString(),
-                "decimal" => statValue.ToString("0.#"),
-                "percentage" => (statValue * 100f).ToString("0.#") + "%",
-                _ => statValue.ToString(),
-            };
+            string format = WeaponStatFormats.TryGetValue(weaponStat, out string weaponFormat)
+                ? weaponFormat
+                : StatFormatPercentage;
+            string statValueString = FormatStatValue(statValue, format);
 
             return $"<color=#90EE90>+{statValueString}</color>";
         }
