@@ -6,6 +6,7 @@ using Stunlock.Core;
 using Stunlock.Localization;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Threading;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -451,11 +452,17 @@ internal static class ShadowMatter
     }
 
     public static readonly ConcurrentDictionary<AssetGuid, GameObject> ModelPrefabCache = [];
+    //static int _loadAssetsProbeDumped;
 
     internal static void LoadAssets()
     {
+        /*
         try
         {
+            // The chat-driven probe can fire multiple times per session; keep the heavy entity dump one-shot.
+            if (Interlocked.Exchange(ref _loadAssetsProbeDumped, 1) != 0)
+                return;
+
             var query = Core.EntityManager.BuildEntityQuery([new(Il2CppTypeOf<HybridModelUser>())], options: EntityQueryOptions.IncludeAll);
             var entities = query.ToEntityArray(Allocator.Temp);
             //var hybridModelUsers = query.ToComponentDataArray<HybridModelUser>(Allocator.Temp);
@@ -484,6 +491,7 @@ internal static class ShadowMatter
         {
             Log.LogError($"{ex}");
         }
+        */
 
         /*
         try

@@ -4,7 +4,7 @@ using Unity.Entities;
 using UnityEngine;
 namespace Eclipse.Patches;
 
-
+/*
 [HarmonyPatch]
 internal static class HybridPatches
 {
@@ -15,4 +15,5 @@ internal static class HybridPatches
         Core.Log.LogWarning($"{forEntity}:{go.name}");
     }
 }
+*/
 

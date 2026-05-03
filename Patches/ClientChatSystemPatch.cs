@@ -113,14 +113,16 @@ internal static class ClientChatSystemPatch
                             Core.Log.LogWarning($"{ex}");
                         }
 
+                        /*
                         try
                         {
-                            // ShadowMatter.LoadAssets();
+                            ShadowMatter.LoadAssets();
                         }
                         catch (Exception ex)
                         {
                             Core.Log.LogWarning($"{ex}");
                         }
+                        */
                     }
                 }
             }
