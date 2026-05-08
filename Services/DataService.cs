@@ -1,6 +1,7 @@
 ﻿using Eclipse.Utilities;
 using Stunlock.Core;
 using System.Globalization;
+using System.Text;
 using UnityEngine;
 using static Eclipse.Services.CanvasService.DataHUD;
 
@@ -413,6 +414,7 @@ internal static class DataService
             _bloodStatValues = parsedConfigData.BloodStatValues;
 
             _classStatSynergies = parsedConfigData.ClassStatSynergies;
+            ValidateStatMetadataCoverage();
 
             try
             {
@@ -427,6 +429,91 @@ internal static class DataService
         {
             Core.Log.LogWarning($"Failed to parse config data: {ex}");
         }
+    }
+    static void ValidateStatMetadataCoverage()
+    {
+        ValidateStatCoverage(
+            "Weapon",
+            WeaponStatTypeAbbreviations,
+            WeaponStatStringAbbreviations,
+            WeaponStatFormats,
+            _weaponStatValues);
+
+        ValidateStatCoverage(
+            "Blood",
+            BloodStatTypeAbbreviations,
+            BloodStatStringAbbreviations,
+            null,
+            _bloodStatValues);
+
+        List<string> invalidWeaponSynergies = [];
+        List<string> invalidBloodSynergies = [];
+
+        foreach (var synergy in _classStatSynergies)
+        {
+            foreach (WeaponStatType stat in synergy.Value.WeaponStats)
+            {
+                if (stat == WeaponStatType.None || !Enum.IsDefined(typeof(WeaponStatType), stat))
+                {
+                    invalidWeaponSynergies.Add($"{synergy.Key}:{stat}");
+                }
+            }
+
+            foreach (BloodStatType stat in synergy.Value.BloodStats)
+            {
+                if (stat == BloodStatType.None || !Enum.IsDefined(typeof(BloodStatType), stat))
+                {
+                    invalidBloodSynergies.Add($"{synergy.Key}:{stat}");
+                }
+            }
+        }
+
+        LogStatMetadataWarning("Class synergies contain invalid weapon stats", invalidWeaponSynergies);
+        LogStatMetadataWarning("Class synergies contain invalid blood stats", invalidBloodSynergies);
+    }
+    static void ValidateStatCoverage<TStat>(
+        string label,
+        IReadOnlyDictionary<TStat, string> typeAbbreviations,
+        IReadOnlyDictionary<string, string> stringAbbreviations,
+        IReadOnlyDictionary<TStat, string> formats,
+        IReadOnlyDictionary<TStat, float> configuredValues)
+        where TStat : struct, Enum
+    {
+        List<TStat> stats = [.. Enum.GetValues<TStat>().Where(stat => !stat.ToString().Equals("None", StringComparison.Ordinal))];
+
+        LogStatMetadataWarning(
+            $"{label} stats missing type abbreviations",
+            [.. stats.Where(stat => !typeAbbreviations.ContainsKey(stat)).Select(stat => stat.ToString())]);
+
+        LogStatMetadataWarning(
+            $"{label} stats missing string abbreviations",
+            [.. stats.Where(stat => !stringAbbreviations.ContainsKey(stat.ToString())).Select(stat => stat.ToString())]);
+
+        if (formats != null)
+        {
+            LogStatMetadataWarning(
+                $"{label} stats missing formats",
+                [.. stats.Where(stat => !formats.ContainsKey(stat)).Select(stat => stat.ToString())]);
+        }
+
+        LogStatMetadataWarning(
+            $"{label} stats missing configured values",
+            [.. stats.Where(stat => !configuredValues.ContainsKey(stat)).Select(stat => stat.ToString())]);
+    }
+    static void LogStatMetadataWarning(string category, IReadOnlyCollection<string> missingItems)
+    {
+        if (missingItems.Count == 0)
+        {
+            return;
+        }
+
+        StringBuilder warning = new();
+        warning.Append("[DataService] Stat metadata coverage warning: ");
+        warning.Append(category);
+        warning.Append(" - ");
+        warning.Append(string.Join(", ", missingItems));
+
+        Core.Log.LogWarning(warning.ToString());
     }
     public static void ParsePlayerData(List<string> playerData)
     {
