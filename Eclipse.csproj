@@ -8,6 +8,8 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<LangVersion>preview</LangVersion>
+		<DeployToClient>false</DeployToClient>
+		<ClientPluginDirectory Condition="'$(ClientPluginDirectory)' == ''">C:\Program Files (x86)\Steam\steamapps\common\VRising\BepInEx\plugins</ClientPluginDirectory>
 		<RestoreSources>
 			https://api.nuget.org/v3/index.json;
 			https://nuget.bepinex.dev/v3/index.json;
@@ -25,7 +27,7 @@
 	<ItemGroup>
 	  <None Include=".github\copilot-instructions.md" />
 	</ItemGroup>
-	<Target Name="BuildToClient" AfterTargets="Build">
-		<Copy SourceFiles="$(TargetDir)$(ProjectName).dll" DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\VRising\BepInEx\plugins" />
+	<Target Name="BuildToClient" AfterTargets="Build" Condition="'$(DeployToClient)' == 'true'">
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ClientPluginDirectory)" SkipUnchangedFiles="true" />
 	</Target>	
 </Project>
