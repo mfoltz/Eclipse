@@ -1,3 +1,7 @@
+`1.3.14`
+- optional Emberglass bridge support for Bloodcraft registration and server messages
+- release workflow hardening for safer prerelease and Thunderstore publishing
+
 `1.3.13`
 - primal weapons
 

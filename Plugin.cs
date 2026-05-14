@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using Eclipse.Services;
 using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
@@ -9,6 +10,7 @@ using UnityEngine;
 namespace Eclipse;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInDependency("io.zfolmt.Emberglass", BepInDependency.DependencyFlags.SoftDependency)]
 internal class Plugin : BasePlugin
 {
     Harmony _harmony;
@@ -25,6 +27,7 @@ internal class Plugin : BasePlugin
     static ConfigEntry<bool> _quests;
     static ConfigEntry<bool> _shiftSlot;
     static ConfigEntry<bool> _eclipsed;
+    static ConfigEntry<bool> _useEmberglassBridge;
     public static bool Leveling
         => _leveling.Value;
     public static bool Prestige
@@ -43,6 +46,8 @@ internal class Plugin : BasePlugin
         => _shiftSlot.Value;
     public static bool Eclipsed
         => _eclipsed.Value;
+    public static bool UseEmberglassBridge
+        => _useEmberglassBridge.Value;
     public override void Load()
     {
         Instance = this;
@@ -55,6 +60,7 @@ internal class Plugin : BasePlugin
 
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
         InitConfig();
+        EmberglassEclipseBridge.Initialize();
         Core.Log.LogInfo($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] loaded on client!");
     }
     static void InitConfig()
@@ -68,6 +74,7 @@ internal class Plugin : BasePlugin
         _quests = InitConfigEntry("UIOptions", "QuestTrackers", true, "Enable/Disable the quest tracker, requires both ClientCompanion/QuestSystem to be enabled in Bloodcraft.");
         _shiftSlot = InitConfigEntry("UIOptions", "ShiftSlot", true, "Enable/Disable the shift slot, requires both ClientCompanion and shift slot spell to be enabled in Bloodcraft.");
         _eclipsed = InitConfigEntry("UIOptions", "Eclipsed", true, "Set to false for slower update intervals (0.1s -> 1s) if performance is negatively impacted.");
+        _useEmberglassBridge = InitConfigEntry("UIOptions", "UseEmberglassBridge", false, "Use Emberglass for the Bloodcraft/Eclipse bridge when Emberglass is installed. Falls back to the legacy chat bridge when disabled or unavailable.");
     }
     static ConfigEntry<T> InitConfigEntry<T>(string section, string key, T defaultValue, string description)
     {
