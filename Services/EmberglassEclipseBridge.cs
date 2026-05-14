@@ -16,7 +16,7 @@ internal static class EmberglassEclipseBridge
     static bool _disabledForSession;
     static bool _unavailableLogged;
     static bool _clientReadyLogged;
-    static string _pendingRegistrationMessage;
+    static bool _notReadyLogged;
     static MethodInfo _sendToServer;
     static PropertyInfo _isReady;
     static EventInfo _onReady;
@@ -76,9 +76,8 @@ internal static class EmberglassEclipseBridge
 
         if (!IsClientReady())
         {
-            _pendingRegistrationMessage = message;
-            Core.Log.LogInfo("[EclipseBridge:Emberglass] registration queued");
-            return true;
+            LogNotReady();
+            return false;
         }
 
         return TrySendRegistrationNow(message);
@@ -130,15 +129,6 @@ internal static class EmberglassEclipseBridge
 
         _clientReadyLogged = true;
         Core.Log.LogInfo("[EclipseBridge:Emberglass] client ready");
-
-        if (string.IsNullOrEmpty(_pendingRegistrationMessage))
-        {
-            return;
-        }
-
-        string message = _pendingRegistrationMessage;
-        _pendingRegistrationMessage = string.Empty;
-        TrySendRegistrationNow(message);
     }
 
     static bool TryResolveVNetwork(out Type vNetworkType)
@@ -163,7 +153,18 @@ internal static class EmberglassEclipseBridge
 
     static bool IsClientReady()
     {
-        return _clientReady;
+        if (_clientReady)
+        {
+            return true;
+        }
+
+        if (IsReady())
+        {
+            OnClientReady();
+            return true;
+        }
+
+        return false;
     }
 
     static bool IsReady()
@@ -180,6 +181,16 @@ internal static class EmberglassEclipseBridge
 
         _unavailableLogged = true;
         Core.Log.LogInfo($"[EclipseBridge:Emberglass] unavailable; using ChatMessage bridge ({reason})");
+    }
+    static void LogNotReady()
+    {
+        if (_notReadyLogged)
+        {
+            return;
+        }
+
+        _notReadyLogged = true;
+        Core.Log.LogInfo("[EclipseBridge:Emberglass] client not ready; using ChatMessage bridge");
     }
 
     static void DisableForSession(string reason)
