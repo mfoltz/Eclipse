@@ -99,30 +99,9 @@ internal static class ClientChatSystemPatch
                     ChatMessageServerEvent chatMessage = entity.Read<ChatMessageServerEvent>();
                     string message = chatMessage.MessageText.Value;
 
-                    if (chatMessage.MessageType.Equals(ServerChatMessageType.System) && CheckMAC(message, out string originalMessage))
+                    if (chatMessage.MessageType.Equals(ServerChatMessageType.System) && TryHandleBridgeServerMessage(message, out _))
                     {
-                        HandleServerMessage(originalMessage);
                         EntityManager.DestroyEntity(entity);
-
-                        try
-                        {
-                            ShadowMatter.OnLoad();
-                        }
-                        catch (Exception ex)
-                        {
-                            Core.Log.LogWarning($"{ex}");
-                        }
-
-                        /*
-                        try
-                        {
-                            ShadowMatter.LoadAssets();
-                        }
-                        catch (Exception ex)
-                        {
-                            Core.Log.LogWarning($"{ex}");
-                        }
-                        */
                     }
                 }
             }
@@ -155,6 +134,11 @@ internal static class ClientChatSystemPatch
 
         if (string.IsNullOrEmpty(messageWithMAC)) return;
 
+        if (EmberglassEclipseBridge.TrySendRegistration(messageWithMAC))
+        {
+            return;
+        }
+
         ChatMessageEvent chatMessageEvent = new()
         {
             MessageText = new FixedString512Bytes(messageWithMAC),
@@ -167,7 +151,47 @@ internal static class ClientChatSystemPatch
         networkEntity.Write(_networkEventType);
         networkEntity.Write(chatMessageEvent);
 
-        Core.Log.LogInfo($"Registration payload sent to server ({DateTime.Now}) - {messageWithMAC}");
+        Core.Log.LogInfo($"Registration payload sent to server via ChatMessage ({DateTime.Now})");
+    }
+    internal static bool TryHandleBridgeServerMessage(string message, out string messageKind)
+    {
+        messageKind = "server message";
+
+        if (!CheckMAC(message, out string originalMessage))
+        {
+            return false;
+        }
+
+        messageKind = GetMessageKind(originalMessage);
+        HandleServerMessage(originalMessage);
+        TryLoadShadowMatter();
+
+        return true;
+    }
+    static string GetMessageKind(string message)
+    {
+        if (!int.TryParse(_regexExtract.Match(message).Groups[1].Value, out int result))
+        {
+            return "server message";
+        }
+
+        return result switch
+        {
+            (int)NetworkEventSubType.ProgressToClient => "progress",
+            (int)NetworkEventSubType.ConfigsToClient => "configs",
+            _ => "server message"
+        };
+    }
+    static void TryLoadShadowMatter()
+    {
+        try
+        {
+            ShadowMatter.OnLoad();
+        }
+        catch (Exception ex)
+        {
+            Core.Log.LogWarning($"{ex}");
+        }
     }
     static void HandleServerMessage(string message)
     {
@@ -230,7 +254,7 @@ internal static class ClientChatSystemPatch
             }
             else
             {
-                Core.Log.LogInfo($"MAC verification failed for matched RegEx message - {receivedMessage}");
+                Core.Log.LogInfo("MAC verification failed for matched RegEx server message.");
             }
         }
 
