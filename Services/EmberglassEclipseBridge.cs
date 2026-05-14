@@ -49,7 +49,8 @@ internal static class EmberglassEclipseBridge
                 .MakeGenericMethod(typeof(EclipseServerMessagePacket))
                 .Invoke(null, [new Action<User, EclipseServerMessagePacket>(OnServerMessagePacket)]);
 
-            _onClientReady?.AddEventHandler(null, new Action(OnClientReady));
+            SubscribeReadinessEvent(_onClientReady);
+            SubscribeReadinessEvent(_onReady);
 
             _available = true;
             Core.Log.LogInfo("[EclipseBridge:Emberglass] registered");
@@ -129,6 +130,53 @@ internal static class EmberglassEclipseBridge
 
         _clientReadyLogged = true;
         Core.Log.LogInfo("[EclipseBridge:Emberglass] client ready");
+    }
+
+    static void OnReady(User user)
+    {
+        OnClientReady();
+    }
+
+    static void SubscribeReadinessEvent(EventInfo readinessEvent)
+    {
+        if (readinessEvent?.EventHandlerType is not { } handlerType)
+        {
+            return;
+        }
+
+        MethodInfo handlerMethod = ResolveReadinessHandler(handlerType);
+        if (handlerMethod == null)
+        {
+            return;
+        }
+
+        readinessEvent.AddEventHandler(null, Delegate.CreateDelegate(handlerType, handlerMethod));
+    }
+
+    static MethodInfo ResolveReadinessHandler(Type handlerType)
+    {
+        MethodInfo invoke = handlerType.GetMethod("Invoke");
+        if (invoke?.ReturnType != typeof(void))
+        {
+            return null;
+        }
+
+        ParameterInfo[] parameters = invoke.GetParameters();
+        if (parameters.Length == 0)
+        {
+            return typeof(EmberglassEclipseBridge).GetMethod(
+                nameof(OnClientReady),
+                BindingFlags.Static | BindingFlags.NonPublic);
+        }
+
+        if (parameters.Length == 1 && parameters[0].ParameterType == typeof(User))
+        {
+            return typeof(EmberglassEclipseBridge).GetMethod(
+                nameof(OnReady),
+                BindingFlags.Static | BindingFlags.NonPublic);
+        }
+
+        return null;
     }
 
     static bool TryResolveVNetwork(out Type vNetworkType)
