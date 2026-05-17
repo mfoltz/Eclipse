@@ -69,8 +69,15 @@ internal static class InitializationPatches
     [HarmonyPrefix]
     static void OnUpdatePrefix(ClientBootstrapSystem __instance)
     {
-        CanvasService._shiftRoutine.Stop();
-        CanvasService._canvasRoutine.Stop();
+        if (CanvasService._shiftRoutine != null)
+        {
+            CanvasService._shiftRoutine.Stop();
+        }
+
+        if (CanvasService._canvasRoutine != null)
+        {
+            CanvasService._canvasRoutine.Stop();
+        }
 
         CanvasService.DataHUD._killSwitch = true;
         CanvasService._shiftRoutine = null;

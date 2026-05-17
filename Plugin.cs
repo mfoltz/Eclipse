@@ -58,10 +58,19 @@ internal class Plugin : BasePlugin
             return;
         }
 
-        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
         InitConfig();
+        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
         EmberglassEclipseBridge.Initialize();
-        Core.Log.LogInfo($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] loaded on client!");
+        Core.Log.LogInfo($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] loaded on client; waiting for game data and UI hooks.");
+    }
+    static void Initialize()
+    {
+        if (Instance == null || Application.productName == "VRisingServer")
+        {
+            return;
+        }
+
+        Core.Log.LogInfo($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] runtime initialize callback reached; waiting for game data and UI hooks.");
     }
     static void InitConfig()
     {
@@ -98,7 +107,9 @@ internal class Plugin : BasePlugin
     }
     public override bool Unload()
     {
-        _harmony.UnpatchSelf();
+        _harmony?.UnpatchSelf();
+        _harmony = null;
+        Core.Reset();
         return true;
     }
 }
