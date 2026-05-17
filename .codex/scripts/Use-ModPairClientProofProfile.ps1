@@ -49,7 +49,7 @@ function Assert-ChildPath {
     $rootPath = [System.IO.Path]::GetFullPath($Root).TrimEnd('\')
     $childPath = [System.IO.Path]::GetFullPath($Child)
     if (-not $childPath.StartsWith($rootPath + "\", [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Refusing path outside client root: $childPath"
+        throw "Refusing path outside root '$rootPath': $childPath"
     }
 }
 
@@ -151,7 +151,7 @@ function Set-IniValue {
     @($before + "$Key = $Value" + $after) | Set-Content -LiteralPath $Path -Encoding utf8
 }
 
-function Apply-ConfigOverride {
+function ConvertTo-ConfigOverride {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Override,
@@ -178,7 +178,24 @@ function Apply-ConfigOverride {
     }
 
     $configPath = Join-Path $ConfigDirectory $configFile
-    Set-IniValue -Path $configPath -Section $pathParts[0] -Key $pathParts[1] -Value $settingParts[1]
+    Assert-ChildPath -Root $ConfigDirectory -Child $configPath
+
+    [pscustomobject]@{
+        Raw = $Override
+        ConfigPath = $configPath
+        Section = $pathParts[0]
+        Key = $pathParts[1]
+        Value = $settingParts[1]
+    }
+}
+
+function Apply-ConfigOverride {
+    param(
+        [Parameter(Mandatory = $true)]
+        [pscustomobject]$Override
+    )
+
+    Set-IniValue -Path $Override.ConfigPath -Section $Override.Section -Key $Override.Key -Value $Override.Value
 }
 
 function Get-ActiveStatePath {
@@ -228,25 +245,19 @@ if ($Action -eq "Install") {
         throw "Proof run does not contain receipt.json: $receiptPath"
     }
 
+    $configOverrides = @()
+    $configOverrideRecords = @()
+    if (Test-Path -LiteralPath $configOverridesPath) {
+        $configOverrides = @(Get-Content -LiteralPath $configOverridesPath | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $_ -ne "No config overrides recorded." })
+        foreach ($override in $configOverrides) {
+            $configOverrideRecords += ConvertTo-ConfigOverride -Override $override -ConfigDirectory $configDirectory
+        }
+    }
+
     $runId = Split-Path -Leaf $proofRunPath
     $backupRoot = Join-Path $clientRootPath ".codex-client-proof-backups"
     $backupPath = Join-Path $backupRoot $runId
     Assert-ChildPath -Root $clientRootPath -Child $backupPath
-
-    New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
-    Copy-DirectoryContents -Source $pluginsDirectory -Destination (Join-Path $backupPath "plugins")
-    Copy-DirectoryContents -Source $configDirectory -Destination (Join-Path $backupPath "config")
-
-    Clear-DirectoryContents -Path $pluginsDirectory
-    Copy-DirectoryContents -Source $stagePluginsDirectory -Destination $pluginsDirectory
-
-    $configOverrides = @()
-    if (Test-Path -LiteralPath $configOverridesPath) {
-        $configOverrides = @(Get-Content -LiteralPath $configOverridesPath | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $_ -ne "No config overrides recorded." })
-        foreach ($override in $configOverrides) {
-            Apply-ConfigOverride -Override $override -ConfigDirectory $configDirectory
-        }
-    }
 
     $state = [ordered]@{
         schema = "mod-pair-client-proof-profile.v1"
@@ -259,7 +270,19 @@ if ($Action -eq "Install") {
         configOverrides = $configOverrides
     }
 
+    New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
+    Copy-DirectoryContents -Source $pluginsDirectory -Destination (Join-Path $backupPath "plugins")
+    Copy-DirectoryContents -Source $configDirectory -Destination (Join-Path $backupPath "config")
+
     $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $activeStatePath -Encoding utf8
+
+    Clear-DirectoryContents -Path $pluginsDirectory
+    Copy-DirectoryContents -Source $stagePluginsDirectory -Destination $pluginsDirectory
+
+    foreach ($overrideRecord in $configOverrideRecords) {
+        Apply-ConfigOverride -Override $overrideRecord
+    }
+
     Write-Host "Installed proof profile into:"
     Write-Host "  $clientRootPath"
     Write-Host "Backup:"
