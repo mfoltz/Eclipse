@@ -44,6 +44,7 @@ internal class CanvasService
     static BufferLookup<ModifyUnitStatBuff_DOTS> ModifyUnitStatBuffLookup
         => ClientChatSystemPatch.ModifyUnitStatBuffLookup;
     static bool Eclipsed { get; } = Plugin.Eclipsed;
+    static bool AttributeBuffs => Plugin.AttributeBuffsEnabled;
     public static WaitForSeconds WaitForSeconds { get; } = Eclipsed
         ? new WaitForSeconds(0.1f)
         : new WaitForSeconds(1f);
@@ -102,7 +103,7 @@ internal class CanvasService
                 }
             }
 
-            var buffer = TryGetSourceBuffer();
+            var buffer = AttributeBuffs ? TryGetSourceBuffer() : default;
 
             if (_legacyBar)
             {
@@ -130,7 +131,7 @@ internal class CanvasService
                 }
             }
 
-            if (StatBuffActive)
+            if (StatBuffActive && AttributeBuffs)
             {
                 try
                 {
@@ -417,7 +418,14 @@ internal class CanvasService
                 if (keyValuePair.Value && AbilitySlotNamePaths.ContainsKey(keyValuePair.Key))
                 {
                     GameObject abilitySlotObject = GameObject.Find(AbilitySlotNamePaths[keyValuePair.Key]);
-                    SimpleStunButton stunButton = abilitySlotObject.AddComponent<SimpleStunButton>();
+                    if (abilitySlotObject == null)
+                    {
+                        Core.Log.LogWarning($"Ability slot '{keyValuePair.Key}' not found; skipping click toggle binding.");
+                        continue;
+                    }
+
+                    SimpleStunButton stunButton = abilitySlotObject.GetComponent<SimpleStunButton>()
+                        ?? abilitySlotObject.AddComponent<SimpleStunButton>();
 
                     if (keyValuePair.Key.Equals(UIElement.Professions))
                     {
@@ -1726,10 +1734,24 @@ internal class CanvasService
 
                     if (abilityDummyObject != null)
                     {
+                        GameObject abilitiesObject = GameObject.Find("HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/Abilities/");
+                        if (abilitiesObject == null)
+                        {
+                            Core.Log.LogWarning("AbilityBar abilities container is null; shift slot disabled.");
+                            return;
+                        }
+
                         shiftSlotObject = UnityEngine.Object.Instantiate(abilityDummyObject);
                         RectTransform rectTransform = shiftSlotObject.GetComponent<RectTransform>();
+                        RectTransform abilitiesTransform = abilitiesObject.GetComponent<RectTransform>();
 
-                        RectTransform abilitiesTransform = GameObject.Find("HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/Abilities/").GetComponent<RectTransform>();
+                        if (rectTransform == null || abilitiesTransform == null)
+                        {
+                            Core.Log.LogWarning("AbilityBar transform data is unavailable; shift slot disabled.");
+                            UnityEngine.Object.Destroy(shiftSlotObject);
+                            shiftSlotObject = null;
+                            return;
+                        }
 
                         UnityEngine.Object.DontDestroyOnLoad(shiftSlotObject);
                         SceneManager.MoveGameObjectToScene(shiftSlotObject, SceneManager.GetSceneByName("VRisingWorld"));
@@ -1778,6 +1800,14 @@ internal class CanvasService
                         abilityIcon.SetActive(true);
 
                         keybindObject = GameObject.Find("HUDCanvas(Clone)/BottomBarCanvas/BottomBar(Clone)/Content/Background/AbilityBar/Abilities/AbilityBarEntry_Dummy(Clone)/KeybindBackground/Keybind/");
+                        if (keybindObject == null)
+                        {
+                            Core.Log.LogWarning("Shift slot keybind object is null; shift slot disabled.");
+                            UnityEngine.Object.Destroy(shiftSlotObject);
+                            shiftSlotObject = null;
+                            return;
+                        }
+
                         TextMeshProUGUI keybindText = keybindObject.GetComponent<TextMeshProUGUI>();
                         keybindText.SetText("Shift");
                         keybindText.enabled = true;

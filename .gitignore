@@ -49,6 +49,9 @@ artifacts/
 
 # VS Code
 .vscode/
+.codex-tmp/
+.codex/artifacts/
+.codex/runs/
 
 *_i.c
 *_p.c
