@@ -1,3 +1,9 @@
+## Unreleased
+
+`1.3.15`
+- added release hygiene helper scripts for changelog/version bump review and metadata updates
+- added CI coverage for the release hygiene nudge before build verification
+
 `1.3.14`
 - optional Emberglass bridge support for Bloodcraft registration and server messages
 - release workflow hardening for safer prerelease and Thunderstore publishing
