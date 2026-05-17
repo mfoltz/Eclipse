@@ -40,11 +40,32 @@ function Resolve-ExistingFile {
     throw "Expected a file path, got directory '$Path'."
 }
 
+function Assert-UniqueArtifactFileNames {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.IO.FileInfo[]]$Artifacts
+    )
+
+    $duplicates = @($Artifacts | Group-Object -Property { $_.Name.ToLowerInvariant() } | Where-Object { $_.Count -gt 1 })
+    if ($duplicates.Count -eq 0) {
+        return
+    }
+
+    $messages = @()
+    foreach ($duplicate in $duplicates) {
+        $messages += "{0}: {1}" -f $duplicate.Group[0].Name, (($duplicate.Group | ForEach-Object { $_.FullName }) -join "; ")
+    }
+
+    throw "Duplicate staged plugin filenames are not supported because BepInEx plugin staging would overwrite files. Rename or wrap one artifact, or stage this scenario manually. Duplicates: $($messages -join " | ")"
+}
+
 if ([string]::IsNullOrWhiteSpace($RunId)) {
     $RunId = Get-Date -Format "yyyyMMdd-HHmmss"
 }
 
 $artifacts = @($PluginArtifact | ForEach-Object { Resolve-ExistingFile -Path $_ })
+Assert-UniqueArtifactFileNames -Artifacts $artifacts
+
 $runDirectory = Join-Path $RunRoot (Join-Path $ProfileLabel (Join-Path $TargetRole $RunId))
 $stagePluginDirectory = Join-Path $runDirectory "stage\BepInEx\plugins"
 New-Item -ItemType Directory -Path $stagePluginDirectory -Force | Out-Null

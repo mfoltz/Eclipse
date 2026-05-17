@@ -18,6 +18,7 @@ Use these names in receipts, folders, and summaries so future community troubles
 Stop and mark the run inconclusive when:
 
 - the staged plugin inventory contains unrelated mods;
+- two staged artifacts would land with the same plugin filename;
 - the proof requires mutating the live game profile without a restorable backup;
 - the client/server build, BepInEx pack, or mod versions cannot be recorded;
 - the observed result is only a manual impression with no retained log or receipt;

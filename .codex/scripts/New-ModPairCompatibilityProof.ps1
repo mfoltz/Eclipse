@@ -81,6 +81,28 @@ function Add-Artifact {
     }
 }
 
+function Assert-UniqueStageFileNames {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]$StagePlan
+    )
+
+    $duplicates = @($StagePlan | Group-Object -Property { $_.Artifact.Name.ToLowerInvariant() } | Where-Object { $_.Count -gt 1 })
+    if ($duplicates.Count -eq 0) {
+        return
+    }
+
+    $messages = @()
+    foreach ($duplicate in $duplicates) {
+        $entries = @($duplicate.Group | ForEach-Object {
+            "{0}:{1}={2}" -f $_.Role, $_.ModName, $_.Artifact.FullName
+        })
+        $messages += "{0}: {1}" -f $duplicate.Group[0].Artifact.Name, ($entries -join "; ")
+    }
+
+    throw "Duplicate staged plugin filenames are not supported because BepInEx plugin staging would overwrite files. Rename or wrap one artifact, or stage this scenario manually. Duplicates: $($messages -join " | ")"
+}
+
 if ([string]::IsNullOrWhiteSpace($RunId)) {
     $RunId = Get-Date -Format "yyyyMMdd-HHmmss"
 }
@@ -93,18 +115,37 @@ $runDirectory = Join-Path $RunRoot (Join-Path $PairLabel (Join-Path $ProofMode $
 $stagePluginDirectory = Join-Path $runDirectory "stage\BepInEx\plugins"
 New-Item -ItemType Directory -Path $stagePluginDirectory -Force | Out-Null
 
-$artifacts = @()
+$stagePlan = @()
 if (($ProofMode -eq "subject-only") -or ($ProofMode -eq "combined-control") -or ($ProofMode -eq "combined-candidate")) {
-    $artifacts += Add-Artifact -Artifact $subjectArtifact -Role "subjectMod" -ModName $SubjectModName -PluginDirectory $stagePluginDirectory
+    $stagePlan += [pscustomobject]@{
+        Artifact = $subjectArtifact
+        Role = "subjectMod"
+        ModName = $SubjectModName
+    }
 }
 
 if (($ProofMode -eq "peer-only") -or ($ProofMode -eq "combined-control") -or ($ProofMode -eq "combined-candidate")) {
-    $artifacts += Add-Artifact -Artifact $peerArtifact -Role "peerMod" -ModName $PeerModName -PluginDirectory $stagePluginDirectory
+    $stagePlan += [pscustomobject]@{
+        Artifact = $peerArtifact
+        Role = "peerMod"
+        ModName = $PeerModName
+    }
 }
 
 foreach ($supportArtifact in $supportArtifacts) {
     $supportName = [System.IO.Path]::GetFileNameWithoutExtension($supportArtifact.Name)
-    $artifacts += Add-Artifact -Artifact $supportArtifact -Role "supportMod" -ModName $supportName -PluginDirectory $stagePluginDirectory
+    $stagePlan += [pscustomobject]@{
+        Artifact = $supportArtifact
+        Role = "supportMod"
+        ModName = $supportName
+    }
+}
+
+Assert-UniqueStageFileNames -StagePlan $stagePlan
+
+$artifacts = @()
+foreach ($stageItem in $stagePlan) {
+    $artifacts += Add-Artifact -Artifact $stageItem.Artifact -Role $stageItem.Role -ModName $stageItem.ModName -PluginDirectory $stagePluginDirectory
 }
 
 $inventoryPath = Join-Path $runDirectory "plugin-inventory.txt"
