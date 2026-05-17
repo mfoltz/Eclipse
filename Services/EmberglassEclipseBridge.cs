@@ -21,6 +21,7 @@ internal static class EmberglassEclipseBridge
     static PropertyInfo _isReady;
     static EventInfo _onReady;
     static EventInfo _onClientReady;
+    static string _pendingRegistrationMessage;
 
     public static void Initialize()
     {
@@ -77,11 +78,18 @@ internal static class EmberglassEclipseBridge
 
         if (!IsClientReady())
         {
+            _pendingRegistrationMessage = message;
             LogNotReady();
             return false;
         }
 
-        return TrySendRegistrationNow(message);
+        bool sent = TrySendRegistrationNow(message);
+        if (sent)
+        {
+            _pendingRegistrationMessage = null;
+        }
+
+        return sent;
     }
 
     static bool TrySendRegistrationNow(string message)
@@ -125,11 +133,13 @@ internal static class EmberglassEclipseBridge
 
         if (_clientReadyLogged)
         {
+            TrySendPendingRegistration();
             return;
         }
 
         _clientReadyLogged = true;
         Core.Log.LogInfo("[EclipseBridge:Emberglass] client ready");
+        TrySendPendingRegistration();
     }
 
     static void OnReady(User user)
@@ -220,6 +230,21 @@ internal static class EmberglassEclipseBridge
         return _isReady?.GetValue(null) is true;
     }
 
+    static void TrySendPendingRegistration()
+    {
+        if (string.IsNullOrWhiteSpace(_pendingRegistrationMessage) || !_available || _disabledForSession)
+        {
+            return;
+        }
+
+        string message = _pendingRegistrationMessage;
+        if (TrySendRegistrationNow(message))
+        {
+            _pendingRegistrationMessage = null;
+            Core.Log.LogInfo("[EclipseBridge:Emberglass] pending registration sent after client ready");
+        }
+    }
+
     static void LogUnavailable(string reason)
     {
         if (_unavailableLogged)
@@ -238,7 +263,7 @@ internal static class EmberglassEclipseBridge
         }
 
         _notReadyLogged = true;
-        Core.Log.LogInfo("[EclipseBridge:Emberglass] client not ready; using ChatMessage bridge");
+        Core.Log.LogInfo("[EclipseBridge:Emberglass] client not ready; queued Emberglass retry and using ChatMessage bridge");
     }
 
     static void DisableForSession(string reason)

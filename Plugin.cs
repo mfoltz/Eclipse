@@ -26,6 +26,7 @@ internal class Plugin : BasePlugin
     static ConfigEntry<bool> _professions;
     static ConfigEntry<bool> _quests;
     static ConfigEntry<bool> _shiftSlot;
+    static ConfigEntry<bool> _attributeBuffs;
     static ConfigEntry<bool> _eclipsed;
     static ConfigEntry<bool> _useEmberglassBridge;
     public static bool Leveling
@@ -44,6 +45,8 @@ internal class Plugin : BasePlugin
         => _quests.Value;
     public static bool ShiftSlot
         => _shiftSlot.Value;
+    public static bool AttributeBuffsEnabled
+        => _attributeBuffs.Value;
     public static bool Eclipsed
         => _eclipsed.Value;
     public static bool UseEmberglassBridge
@@ -58,10 +61,19 @@ internal class Plugin : BasePlugin
             return;
         }
 
-        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
         InitConfig();
+        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
         EmberglassEclipseBridge.Initialize();
-        Core.Log.LogInfo($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] loaded on client!");
+        Core.Log.LogInfo($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] loaded on client; waiting for game data and UI hooks.");
+    }
+    static void Initialize()
+    {
+        if (Instance == null || Application.productName == "VRisingServer")
+        {
+            return;
+        }
+
+        Core.Log.LogInfo($"{MyPluginInfo.PLUGIN_NAME}[{MyPluginInfo.PLUGIN_VERSION}] runtime initialize callback reached; waiting for game data and UI hooks.");
     }
     static void InitConfig()
     {
@@ -73,6 +85,7 @@ internal class Plugin : BasePlugin
         _professions = InitConfigEntry("UIOptions", "Professions", true, "Enable/Disable the professions tab, requires both ClientCompanion/ProfessionSystem to be enabled in Bloodcraft.");
         _quests = InitConfigEntry("UIOptions", "QuestTrackers", true, "Enable/Disable the quest tracker, requires both ClientCompanion/QuestSystem to be enabled in Bloodcraft.");
         _shiftSlot = InitConfigEntry("UIOptions", "ShiftSlot", true, "Enable/Disable the shift slot, requires both ClientCompanion and shift slot spell to be enabled in Bloodcraft.");
+        _attributeBuffs = InitConfigEntry("UIOptions", "AttributeBuffs", false, "Enable/Disable applying Bloodcraft bonus stats to the character attribute buffer. Leave disabled if another client UI mod is also installed or if startup crashes occur.");
         _eclipsed = InitConfigEntry("UIOptions", "Eclipsed", true, "Set to false for slower update intervals (0.1s -> 1s) if performance is negatively impacted.");
         _useEmberglassBridge = InitConfigEntry("UIOptions", "UseEmberglassBridge", false, "Use Emberglass for the Bloodcraft/Eclipse bridge when Emberglass is installed. Falls back to the legacy chat bridge when disabled or unavailable.");
     }
@@ -98,7 +111,9 @@ internal class Plugin : BasePlugin
     }
     public override bool Unload()
     {
-        _harmony.UnpatchSelf();
+        _harmony?.UnpatchSelf();
+        _harmony = null;
+        Core.Reset();
         return true;
     }
 }

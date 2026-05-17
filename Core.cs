@@ -78,6 +78,12 @@ internal static class Core
 
         _localCharacter = Entity.Null;
         _localUser = Entity.Null;
+
+        if (_monoBehaviour != null)
+        {
+            UnityEngine.Object.Destroy(_monoBehaviour.gameObject);
+            _monoBehaviour = null;
+        }
     }
     public static void SetCanvas(UICanvasBase canvas)
     {
