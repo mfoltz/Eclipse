@@ -8,16 +8,12 @@ param(
     [ValidateSet('subject-only', 'peer-only', 'combined-control', 'combined-candidate')]
     [string]$ProofMode,
 
-    [Parameter(Mandatory = $true)]
     [string]$SubjectModName,
 
-    [Parameter(Mandatory = $true)]
     [string]$SubjectModArtifact,
 
-    [Parameter(Mandatory = $true)]
     [string]$PeerModName,
 
-    [Parameter(Mandatory = $true)]
     [string]$PeerModArtifact,
 
     [string[]]$SupportModArtifact = @(),
@@ -81,6 +77,37 @@ function Add-Artifact {
     }
 }
 
+function Test-RequiresSubjectArtifact {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Mode
+    )
+
+    ($Mode -eq "subject-only") -or ($Mode -eq "combined-control") -or ($Mode -eq "combined-candidate")
+}
+
+function Test-RequiresPeerArtifact {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Mode
+    )
+
+    ($Mode -eq "peer-only") -or ($Mode -eq "combined-control") -or ($Mode -eq "combined-candidate")
+}
+
+function Assert-RequiredValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [string]$Value
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        throw "$Name is required for ProofMode '$ProofMode'."
+    }
+}
+
 function Assert-UniqueStageFileNames {
     param(
         [Parameter(Mandatory = $true)]
@@ -107,8 +134,23 @@ if ([string]::IsNullOrWhiteSpace($RunId)) {
     $RunId = Get-Date -Format "yyyyMMdd-HHmmss"
 }
 
-$subjectArtifact = Resolve-ExistingFile -Path $SubjectModArtifact
-$peerArtifact = Resolve-ExistingFile -Path $PeerModArtifact
+$requiresSubjectArtifact = Test-RequiresSubjectArtifact -Mode $ProofMode
+$requiresPeerArtifact = Test-RequiresPeerArtifact -Mode $ProofMode
+
+$subjectArtifact = $null
+if ($requiresSubjectArtifact) {
+    Assert-RequiredValue -Name "-SubjectModName" -Value $SubjectModName
+    Assert-RequiredValue -Name "-SubjectModArtifact" -Value $SubjectModArtifact
+    $subjectArtifact = Resolve-ExistingFile -Path $SubjectModArtifact
+}
+
+$peerArtifact = $null
+if ($requiresPeerArtifact) {
+    Assert-RequiredValue -Name "-PeerModName" -Value $PeerModName
+    Assert-RequiredValue -Name "-PeerModArtifact" -Value $PeerModArtifact
+    $peerArtifact = Resolve-ExistingFile -Path $PeerModArtifact
+}
+
 $supportArtifacts = @($SupportModArtifact | ForEach-Object { Resolve-ExistingFile -Path $_ })
 
 $runDirectory = Join-Path $RunRoot (Join-Path $PairLabel (Join-Path $ProofMode $RunId))
@@ -116,7 +158,7 @@ $stagePluginDirectory = Join-Path $runDirectory "stage\BepInEx\plugins"
 New-Item -ItemType Directory -Path $stagePluginDirectory -Force | Out-Null
 
 $stagePlan = @()
-if (($ProofMode -eq "subject-only") -or ($ProofMode -eq "combined-control") -or ($ProofMode -eq "combined-candidate")) {
+if ($requiresSubjectArtifact) {
     $stagePlan += [pscustomobject]@{
         Artifact = $subjectArtifact
         Role = "subjectMod"
@@ -124,7 +166,7 @@ if (($ProofMode -eq "subject-only") -or ($ProofMode -eq "combined-control") -or 
     }
 }
 
-if (($ProofMode -eq "peer-only") -or ($ProofMode -eq "combined-control") -or ($ProofMode -eq "combined-candidate")) {
+if ($requiresPeerArtifact) {
     $stagePlan += [pscustomobject]@{
         Artifact = $peerArtifact
         Role = "peerMod"
@@ -177,14 +219,18 @@ $receipt = [ordered]@{
     createdAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     repository = (Resolve-Path -LiteralPath ".").Path
     gitCommit = $gitCommit
-    subjectMod = [ordered]@{
-        name = $SubjectModName
-        artifactPath = $subjectArtifact.FullName
-    }
-    peerMod = [ordered]@{
-        name = $PeerModName
-        artifactPath = $peerArtifact.FullName
-    }
+    subjectMod = if ($subjectArtifact -ne $null) {
+        [ordered]@{
+            name = $SubjectModName
+            artifactPath = $subjectArtifact.FullName
+        }
+    } else { $null }
+    peerMod = if ($peerArtifact -ne $null) {
+        [ordered]@{
+            name = $PeerModName
+            artifactPath = $peerArtifact.FullName
+        }
+    } else { $null }
     supportMods = @($supportArtifacts | ForEach-Object {
         [ordered]@{
             name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
