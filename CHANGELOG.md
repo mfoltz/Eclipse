@@ -1,5 +1,8 @@
 ## Unreleased
 
+`1.3.17`
+- added prerelease note generation and changelog turnover validation for GitHub and Thunderstore release flows
+
 `1.3.16`
 - hardened attribute UI initialization so runtime-loaded clients defer when the inventory attribute hierarchy is not ready
 - collapsed Emberglass bridge progress receipts to one client log line per config/progress batch
