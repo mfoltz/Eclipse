@@ -74,6 +74,12 @@ jobs:
           echo "ALLOWED_TAG_PATTERN=$allowed_tag_pattern" >> "$GITHUB_ENV"
           echo "ALLOWED_PACKAGE_VERSION_PATTERN=$allowed_package_version_pattern" >> "$GITHUB_ENV"
 
+      - name: Preserve release helper scripts
+        shell: bash
+        run: |
+          cp .codex/scripts/prerelease-notes.sh "$RUNNER_TEMP/prerelease-notes.sh"
+          chmod +x "$RUNNER_TEMP/prerelease-notes.sh"
+
       - name: Download Release
         run: gh release download "$RELEASE_TAG" -D ./dist
         env:
@@ -83,7 +89,7 @@ jobs:
       - name: Validate downloaded release changelog
         shell: bash
         run: |
-          bash .codex/scripts/prerelease-notes.sh \
+          bash "$RUNNER_TEMP/prerelease-notes.sh" \
             --changelog ./dist/CHANGELOG.md \
             --version "$PACKAGE_VERSION" \
             --tag "$RELEASE_TAG" \

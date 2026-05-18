@@ -146,11 +146,17 @@ function Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog {
     $WorkflowPath = Join-Path (Split-Path -Parent (Split-Path -Parent $ScriptRoot)) ".github/workflows/release.yml"
     $WorkflowText = Get-Content -Raw -Path $WorkflowPath
 
+    $PreserveMarker = "      - name: Preserve release helper scripts"
     $DownloadMarker = "      - name: Download Release"
     $DownloadedChangelogMarker = "      - name: Validate downloaded release changelog"
 
+    $PreserveIndex = $WorkflowText.IndexOf($PreserveMarker, [StringComparison]::Ordinal)
     $DownloadIndex = $WorkflowText.IndexOf($DownloadMarker, [StringComparison]::Ordinal)
     $DownloadedChangelogIndex = $WorkflowText.IndexOf($DownloadedChangelogMarker, [StringComparison]::Ordinal)
+
+    if ($PreserveIndex -lt 0) {
+        throw "release.yml is missing the Preserve release helper scripts step."
+    }
 
     if ($DownloadIndex -lt 0) {
         throw "release.yml is missing the Download Release step."
@@ -160,6 +166,10 @@ function Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog {
         throw "release.yml is missing downloaded release changelog validation."
     }
 
+    if ($DownloadIndex -lt $PreserveIndex) {
+        throw "Release helper scripts must be preserved before downloading the selected release."
+    }
+
     if ($DownloadedChangelogIndex -lt $DownloadIndex) {
         throw "Downloaded release changelog validation must run after the release download."
     }
@@ -167,6 +177,10 @@ function Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog {
     $BeforeDownload = $WorkflowText.Substring(0, $DownloadIndex)
     if ($BeforeDownload -match 'prerelease-notes\.sh[\s\S]*--check-only') {
         throw "release.yml must not run prerelease-notes.sh --check-only against the checkout before downloading the selected release tag."
+    }
+
+    if ($WorkflowText -notmatch '\$RUNNER_TEMP/prerelease-notes\.sh') {
+        throw "release.yml should run changelog validation from the preserved helper script."
     }
 }
 
