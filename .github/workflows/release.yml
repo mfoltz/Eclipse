@@ -23,7 +23,18 @@ jobs:
       - name: Validate canonical version metadata
         id: version_metadata
         shell: bash
-        run: bash .codex/scripts/version-metadata.sh
+        run: |
+          metadata_output=$(bash .codex/scripts/version-metadata.sh)
+          echo "$metadata_output"
+          canonical_version=$(printf '%s\n' "$metadata_output" | sed -n 's/^canonical_version=//p' | tail -n 1)
+          if [ -z "$canonical_version" ]; then
+            echo "Error: canonical version metadata was not emitted." >&2
+            exit 1
+          fi
+
+          bash .codex/scripts/prerelease-notes.sh \
+            --version "$canonical_version" \
+            --check-only
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -79,6 +90,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ env.RELEASE_TAG }}
+
+      - name: Validate downloaded release changelog
+        shell: bash
+        run: |
+          bash .codex/scripts/prerelease-notes.sh \
+            --changelog ./dist/CHANGELOG.md \
+            --version "$PACKAGE_VERSION" \
+            --tag "$RELEASE_TAG" \
+            --check-only
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
 
       - name: Install Thunderstore CLI
         run: dotnet tool install --global tcli
