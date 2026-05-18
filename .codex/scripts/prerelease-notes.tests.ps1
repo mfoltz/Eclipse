@@ -68,10 +68,19 @@ function Test-PrereleaseNotesIncludesChangelogAndDetailsCard {
         }
 
         $Notes = Get-Content -Raw -Path $OutputPath
-        Assert-Match -Text $Notes -Pattern '<details open>' -Message "Release notes did not include the details card."
-        Assert-Match -Text $Notes -Pattern 'Good to know before Thunderstore' -Message "Release notes did not include the card summary."
+        if ($Notes -match '<details') {
+            throw "Release notes should keep the Thunderstore handoff card visible without a dropdown."
+        }
+
+        Assert-Match -Text $Notes -Pattern '### 📦 Thunderstore handoff' -Message "Release notes did not include the handoff card heading."
+        Assert-Match -Text $Notes -Pattern '📝 Changelog' -Message "Release notes did not include the changelog cue."
+        Assert-Match -Text $Notes -Pattern '🌿 Branch' -Message "Release notes did not include the branch cue."
+        Assert-Match -Text $Notes -Pattern '🔖 Commit' -Message "Release notes did not include the commit cue."
+        Assert-Match -Text $Notes -Pattern '▶️ Run' -Message "Release notes did not include the workflow run cue."
+        Assert-Match -Text $Notes -Pattern '🏷️ Tag' -Message "Release notes did not include the tag cue."
+        Assert-Match -Text $Notes -Pattern '📦 Package' -Message "Release notes did not include the package cue."
         Assert-Match -Text $Notes -Pattern '## Unreleased.*empty' -Message "Release notes did not describe changelog turnover."
-        Assert-Match -Text $Notes -Pattern 'Thunderstore version.*1\.2\.3' -Message "Release notes did not include the Thunderstore package version."
+        Assert-Match -Text $Notes -Pattern 'Package.*1\.2\.3' -Message "Release notes did not include the Thunderstore package version."
         Assert-Match -Text $Notes -Pattern 'fixed the client widget timing' -Message "Release notes did not include current version changelog notes."
         Assert-Match -Text $Notes -Pattern '1234567890ab' -Message "Release notes did not include the short commit."
     }
@@ -101,6 +110,30 @@ function Test-PrereleaseNotesRejectsUnreleasedContent {
         }
 
         Assert-Match -Text $Output -Pattern 'CHANGELOG\.md ## Unreleased must be empty' -Message "Unreleased rejection message was not specific."
+    }
+    finally {
+        Remove-Item -Recurse -Force -LiteralPath $FixtureRoot
+    }
+}
+
+function Test-PrereleaseNotesRejectsMissingUnreleasedHeader {
+    $FixtureRoot = New-Fixture
+    try {
+        $ChangelogPath = Join-Path $FixtureRoot "CHANGELOG.md"
+        Set-Content -Path $ChangelogPath -Value @'
+`1.2.3`
+- fixed the client widget timing
+'@
+
+        $Output = Invoke-PrereleaseNotes -Arguments @(
+            "--changelog", $ChangelogPath,
+            "--version", "1.2.3",
+            "--check-only")
+        if ($LASTEXITCODE -eq 0) {
+            throw "prerelease-notes.sh unexpectedly accepted a missing Unreleased header."
+        }
+
+        Assert-Match -Text $Output -Pattern 'must contain a ## Unreleased section' -Message "Missing Unreleased rejection message was not specific."
     }
     finally {
         Remove-Item -Recurse -Force -LiteralPath $FixtureRoot
@@ -137,11 +170,17 @@ function Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog {
     $WorkflowPath = Join-Path (Split-Path -Parent (Split-Path -Parent $ScriptRoot)) ".github/workflows/release.yml"
     $WorkflowText = Get-Content -Raw -Path $WorkflowPath
 
+    $PreserveMarker = "      - name: Preserve release helper scripts"
     $DownloadMarker = "      - name: Download Release"
     $DownloadedChangelogMarker = "      - name: Validate downloaded release changelog"
 
+    $PreserveIndex = $WorkflowText.IndexOf($PreserveMarker, [StringComparison]::Ordinal)
     $DownloadIndex = $WorkflowText.IndexOf($DownloadMarker, [StringComparison]::Ordinal)
     $DownloadedChangelogIndex = $WorkflowText.IndexOf($DownloadedChangelogMarker, [StringComparison]::Ordinal)
+
+    if ($PreserveIndex -lt 0) {
+        throw "release.yml is missing the Preserve release helper scripts step."
+    }
 
     if ($DownloadIndex -lt 0) {
         throw "release.yml is missing the Download Release step."
@@ -149,6 +188,10 @@ function Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog {
 
     if ($DownloadedChangelogIndex -lt 0) {
         throw "release.yml is missing downloaded release changelog validation."
+    }
+
+    if ($DownloadIndex -lt $PreserveIndex) {
+        throw "Release helper scripts must be preserved before downloading the selected release."
     }
 
     if ($DownloadedChangelogIndex -lt $DownloadIndex) {
@@ -159,10 +202,15 @@ function Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog {
     if ($BeforeDownload -match 'prerelease-notes\.sh[\s\S]*--check-only') {
         throw "release.yml must not run prerelease-notes.sh --check-only against the checkout before downloading the selected release tag."
     }
+
+    if ($WorkflowText -notmatch '\$RUNNER_TEMP/prerelease-notes\.sh') {
+        throw "release.yml should run changelog validation from the preserved helper script."
+    }
 }
 
 Test-PrereleaseNotesIncludesChangelogAndDetailsCard
 Test-PrereleaseNotesRejectsUnreleasedContent
+Test-PrereleaseNotesRejectsMissingUnreleasedHeader
 Test-PrereleaseNotesRejectsMissingVersionEntry
 Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog
 
