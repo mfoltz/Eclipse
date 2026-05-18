@@ -41,7 +41,9 @@ function Invoke-PrereleaseNotes {
 
 function Test-PrereleaseNotesIncludesChangelogAndDetailsCard {
     $FixtureRoot = New-Fixture
+    $PreviousRepository = $env:GITHUB_REPOSITORY
     try {
+        $env:GITHUB_REPOSITORY = "mfoltz/Eclipse"
         $ChangelogPath = Join-Path $FixtureRoot "CHANGELOG.md"
         $OutputPath = Join-Path $FixtureRoot "prerelease-notes.md"
         Set-Content -Path $ChangelogPath -Value @'
@@ -72,7 +74,11 @@ function Test-PrereleaseNotesIncludesChangelogAndDetailsCard {
             throw "Release notes should keep the Thunderstore handoff card visible without a dropdown."
         }
 
-        Assert-Match -Text $Notes -Pattern '### 📦 Thunderstore handoff' -Message "Release notes did not include the handoff card heading."
+        if ($Notes -match '### 📦 Thunderstore handoff') {
+            throw "Release notes should use the Thunderstore badge instead of the emoji heading."
+        }
+
+        Assert-Match -Text $Notes -Pattern '<img src="https://raw\.githubusercontent\.com/mfoltz/Eclipse/1234567890abcdef/\.github/assets/ts_badge\.png"' -Message "Release notes did not include the Thunderstore badge image."
         Assert-Match -Text $Notes -Pattern '📝 Changelog' -Message "Release notes did not include the changelog cue."
         Assert-Match -Text $Notes -Pattern '🌿 Branch' -Message "Release notes did not include the branch cue."
         Assert-Match -Text $Notes -Pattern '🔖 Commit' -Message "Release notes did not include the commit cue."
@@ -85,6 +91,7 @@ function Test-PrereleaseNotesIncludesChangelogAndDetailsCard {
         Assert-Match -Text $Notes -Pattern '1234567890ab' -Message "Release notes did not include the short commit."
     }
     finally {
+        $env:GITHUB_REPOSITORY = $PreviousRepository
         Remove-Item -Recurse -Force -LiteralPath $FixtureRoot
     }
 }
