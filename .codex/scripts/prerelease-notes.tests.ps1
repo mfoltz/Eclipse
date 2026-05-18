@@ -47,13 +47,17 @@ function Test-PrereleaseNotesIncludesChangelogAndDetailsCard {
         $ChangelogPath = Join-Path $FixtureRoot "CHANGELOG.md"
         $OutputPath = Join-Path $FixtureRoot "prerelease-notes.md"
         Set-Content -Path $ChangelogPath -Value @'
+# Changelog
+
 ## Unreleased
 
-`1.2.3`
+## v1.2.3
+
 - fixed the client widget timing
 - added a runtime receipt
 
-`1.2.2`
+## v1.2.2
+
 - previous release
 '@
 
@@ -101,10 +105,13 @@ function Test-PrereleaseNotesRejectsUnreleasedContent {
     try {
         $ChangelogPath = Join-Path $FixtureRoot "CHANGELOG.md"
         Set-Content -Path $ChangelogPath -Value @'
+# Changelog
+
 ## Unreleased
 - still parked for the next release
 
-`1.2.3`
+## v1.2.3
+
 - fixed the client widget timing
 '@
 
@@ -128,7 +135,10 @@ function Test-PrereleaseNotesRejectsMissingUnreleasedHeader {
     try {
         $ChangelogPath = Join-Path $FixtureRoot "CHANGELOG.md"
         Set-Content -Path $ChangelogPath -Value @'
-`1.2.3`
+# Changelog
+
+## v1.2.3
+
 - fixed the client widget timing
 '@
 
@@ -152,9 +162,12 @@ function Test-PrereleaseNotesRejectsMissingVersionEntry {
     try {
         $ChangelogPath = Join-Path $FixtureRoot "CHANGELOG.md"
         Set-Content -Path $ChangelogPath -Value @'
+# Changelog
+
 ## Unreleased
 
-`1.2.2`
+## v1.2.2
+
 - previous release
 '@
 
