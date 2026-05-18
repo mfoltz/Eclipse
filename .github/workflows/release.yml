@@ -23,18 +23,7 @@ jobs:
       - name: Validate canonical version metadata
         id: version_metadata
         shell: bash
-        run: |
-          metadata_output=$(bash .codex/scripts/version-metadata.sh)
-          echo "$metadata_output"
-          canonical_version=$(printf '%s\n' "$metadata_output" | sed -n 's/^canonical_version=//p' | tail -n 1)
-          if [ -z "$canonical_version" ]; then
-            echo "Error: canonical version metadata was not emitted." >&2
-            exit 1
-          fi
-
-          bash .codex/scripts/prerelease-notes.sh \
-            --version "$canonical_version" \
-            --check-only
+        run: bash .codex/scripts/version-metadata.sh
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4

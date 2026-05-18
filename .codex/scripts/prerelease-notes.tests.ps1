@@ -133,8 +133,37 @@ function Test-PrereleaseNotesRejectsMissingVersionEntry {
     }
 }
 
+function Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog {
+    $WorkflowPath = Join-Path (Split-Path -Parent (Split-Path -Parent $ScriptRoot)) ".github/workflows/release.yml"
+    $WorkflowText = Get-Content -Raw -Path $WorkflowPath
+
+    $DownloadMarker = "      - name: Download Release"
+    $DownloadedChangelogMarker = "      - name: Validate downloaded release changelog"
+
+    $DownloadIndex = $WorkflowText.IndexOf($DownloadMarker, [StringComparison]::Ordinal)
+    $DownloadedChangelogIndex = $WorkflowText.IndexOf($DownloadedChangelogMarker, [StringComparison]::Ordinal)
+
+    if ($DownloadIndex -lt 0) {
+        throw "release.yml is missing the Download Release step."
+    }
+
+    if ($DownloadedChangelogIndex -lt 0) {
+        throw "release.yml is missing downloaded release changelog validation."
+    }
+
+    if ($DownloadedChangelogIndex -lt $DownloadIndex) {
+        throw "Downloaded release changelog validation must run after the release download."
+    }
+
+    $BeforeDownload = $WorkflowText.Substring(0, $DownloadIndex)
+    if ($BeforeDownload -match 'prerelease-notes\.sh[\s\S]*--check-only') {
+        throw "release.yml must not run prerelease-notes.sh --check-only against the checkout before downloading the selected release tag."
+    }
+}
+
 Test-PrereleaseNotesIncludesChangelogAndDetailsCard
 Test-PrereleaseNotesRejectsUnreleasedContent
 Test-PrereleaseNotesRejectsMissingVersionEntry
+Test-ReleaseWorkflowChecksOnlyDownloadedReleaseChangelog
 
 Write-Host "prerelease-notes tests passed"
