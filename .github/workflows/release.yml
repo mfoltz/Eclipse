@@ -80,6 +80,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ env.RELEASE_TAG }}
 
+      - name: Validate downloaded release changelog
+        shell: bash
+        run: |
+          bash .codex/scripts/prerelease-notes.sh \
+            --changelog ./dist/CHANGELOG.md \
+            --version "$PACKAGE_VERSION" \
+            --tag "$RELEASE_TAG" \
+            --check-only
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+
       - name: Install Thunderstore CLI
         run: dotnet tool install --global tcli
 
