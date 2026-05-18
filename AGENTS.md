@@ -1,63 +1,48 @@
-# AGENTS.md: Universal Principles for CSharp and General Programming
+# Eclipse Agent Guide
 
-This guide provides universal, intelligent principles and patterns to master C# coding effectively, applicable across any project or repository.
+This file is for Codex and other coding agents working in this repository. Keep changes narrow, evidence-led, and specific to Eclipse's V Rising client UI and Bloodcraft bridge runtime.
 
-## 🧠 Structured Reasoning
+## Start Here
 
-* **Single Responsibility Principle (SRP)**: Every class and method should have one clearly defined responsibility.
-* **Explicit Intent**: Write self-descriptive methods and classes, avoiding ambiguous or overly general names.
-* **Readability First**: Prioritize readability over cleverness. The intent of your code should be immediately clear to others.
+- Before acting, restate the exact problem, main non-goals, and the condition that should make you stop instead of pushing forward.
+- Check the current branch and worktree before editing. Do not rebase, push, merge, delete, retarget, or rewrite branches unless explicitly asked.
+- Prefer small, local changes that follow the existing Eclipse patterns. Avoid broad rewrites, style-only churn, or generic architecture cleanups.
+- Treat adjacent repos such as Bloodcraft and Emberglass as evidence or integration partners. Do not move their ownership boundaries into Eclipse unless the task explicitly asks for that consumer-side change.
 
-## 🎯 Clarity & Explicitness
+## Build And Verification
 
-* Clearly specify the purpose, parameters, and return values of each method using XML documentation comments.
-* Choose names that explicitly describe intent (e.g., `CalculateTotalPrice()` instead of `Calculate()` or `CalcTP()`).
-* Favor descriptive variable names (`customerAge` rather than `ca`).
+- Use this verification ladder unless the task is explicitly docs-only:
+  - `git diff --check`
+  - `dotnet restore Eclipse.csproj`
+  - `dotnet build Eclipse.csproj --configuration Release -p:DeployToClient=false --no-restore`
+- `Eclipse.csproj` can copy build output to a local V Rising client plugin folder when deployment is enabled. Use `-p:DeployToClient=false` for compile checks that should not stage DLLs.
+- Keep Codex tooling, probes, temporary receipts, and agent-only proof artifacts under `.codex/`.
+- Runtime proof helpers and receipts live under `.codex/runtime-proofs/` and `.codex/runs/`; treat those receipts and logs as evidence, not as source files to polish during unrelated tasks.
 
-## 🔄 Iterative Improvement
+## V Rising Modding Constraints
 
-* Implement incremental changes and continuously validate with unit tests.
-* Regularly refactor code to simplify complexity and improve maintainability.
-* Conduct periodic peer reviews to integrate diverse perspectives and catch overlooked issues.
+- Preserve BepInEx, Harmony, VampireReferenceAssemblies, IL2CPP, and V Rising client lifecycle assumptions unless the task is specifically to change them.
+- Be careful around static initialization, world access, UI canvas/bootstrap timing, client readiness, and hotload/runtime-load entry points. Do not move runtime lookups earlier without proving the startup path still works.
+- Eclipse initializes in stages: plugin load/config/patching first, then game/world readiness before client services and UI behavior are safe. Keep fallback paths explicit when Emberglass is unavailable or not ready.
+- For Bloodcraft or Emberglass bridge work, separate registration, send, fallback, and runtime receipt evidence. Do not treat a queued or suppressed send as proof that the bridge actually delivered.
+- Avoid importing framework behavior from Emberglass or server-side Bloodcraft code wholesale. Eclipse should stay a consumer UI mod unless the task explicitly changes that boundary.
 
-## 🛡️ Robustness & Safety Nets
+## Release And Metadata Boundaries
 
-* Write unit tests covering critical paths and edge cases to ensure code stability and correctness.
-* Leverage static code analysis tools like Roslyn analyzers and StyleCop to maintain high-quality standards.
-* Use assertions liberally to document and enforce assumptions in code logic.
+- Keep the canonical version plain `X.Y.Z` in `Eclipse.csproj`, `thunderstore.toml`, and the top `CHANGELOG.md` entry.
+- Do not commit branch-derived `-pre` or `-ft.*` versions. Those are CI outputs only.
+- Defer final README, changelog, and Thunderstore wording until after build and focused verification when a feature branch is still being stabilized.
+- For release workflow changes, keep GitHub prerelease and Thunderstore package-version handling distinct.
 
-## 🏗️ Universal Design Patterns
+## Workflow And Review Guidance
 
-* **Factory & Abstract Factory**: For managing object creation and reducing direct dependencies.
-* **Strategy Pattern**: To encapsulate varying algorithms and make behaviors interchangeable.
-* **Repository Pattern**: For abstracting data layer logic and enhancing testability.
-* **Dependency Injection**: Use constructor injection to clearly define dependencies and improve modularity.
+- For GitHub Actions changes, prefer minimal reliability fixes and use YAML-aware validation. Do not run `bash -n` against workflow YAML.
+- For PowerShell proof or release scripts, keep edits small and verify the exact script or test harness touched by the change.
+- For UI/runtime changes, prefer source-backed or log-backed evidence over assumptions from history alone.
 
-## ♻️ Maintainable Code Habits
+## Stop Conditions
 
-* Avoid magic numbers; define constants or configuration settings instead.
-* Keep methods short (ideally fewer than 30 lines) to enhance readability and testability.
-* Organize methods logically within classes (constructors first, public methods next, followed by private methods).
-
-## 🚦 Consistent Coding Style
-
-* Adhere to established naming conventions:
-
-  * Methods & Variables: `PascalCase`
-  * Private fields & parameters: `camelCase`
-  * Constants: `UPPERCASE_WITH_UNDERSCORES`
-* Consistently format your code using tools like `.editorconfig`.
-
-## 📈 Performance Awareness
-
-* Understand the performance implications of collections (prefer using `Dictionary` for key-value lookups over lists).
-* Minimize object allocations, especially within loops or performance-critical paths.
-* Favor efficient data structures and algorithms suited to the task at hand (e.g., HashSets for uniqueness checks).
-
-## 🛠️ Continuous Learning & Reflection
-
-* Periodically review code written previously to identify opportunities for improvement.
-* Stay updated on language features and industry best practices.
-* Learn from established open-source C# projects and communities.
-
-By internalizing these universal principles, you build a solid foundation to become a proficient and thoughtful C# developer.
+- Stop if remote or GitHub state cannot be verified for a branch/merge-train task.
+- Stop if the available evidence cannot distinguish Eclipse-owned behavior from Bloodcraft, Emberglass, stale installs, dependency mismatch, or local environment failure.
+- Stop if verification fails in a way that would require broadening beyond the requested scope.
+- Stop before advising public release, Thunderstore publication, or bridge/runtime success when build evidence, logs, or proof receipts do not support the claim.
