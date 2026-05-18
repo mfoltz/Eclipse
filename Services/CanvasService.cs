@@ -493,16 +493,32 @@ internal class CanvasService
             }
             */
 
-            Transform attributeSectionsParent = inventorySubMenu.AttributesParentConsole.transform.parent.parent.GetChild(4).GetChild(0).GetChild(2).GetChild(0);
-            var attributeSections = attributeSectionsParent?
+            if (!TryGetAttributeSectionsParent(inventorySubMenu, out Transform attributeSectionsParent))
+            {
+                return false;
+            }
+
+            var attributeSections = attributeSectionsParent
                 .GetComponentsInChildren<CharacterAttributeSection>(false).Take(1)
-                .Concat(attributeSectionsParent.GetComponentsInChildren<CharacterAttributeSection>(false).Skip(2));
+                .Concat(attributeSectionsParent.GetComponentsInChildren<CharacterAttributeSection>(false).Skip(2))
+                .ToList();
+
+            if (attributeSections.Count == 0)
+            {
+                return false;
+            }
 
             // Core.Log.LogWarning($"Found {attributeSections.Count()} attribute sections!");
 
             foreach (CharacterAttributeSection section in attributeSections)
             {
-                GameObject attributesContainer = section.transform.FindChild("AttributesContainer").gameObject;
+                Transform attributesContainerTransform = section.transform.FindChild("AttributesContainer");
+                if (attributesContainerTransform == null)
+                {
+                    return false;
+                }
+
+                GameObject attributesContainer = attributesContainerTransform.gameObject;
                 var attributeEntries = attributesContainer.transform.GetComponentsInChildren<CharacterAttributeEntry>(false);
                 int index = 0;
 
@@ -546,10 +562,39 @@ internal class CanvasService
                 catch (Exception ex)
                 {
                     Core.Log.LogError($"Failed to initialize attribute values for section {section.name}: {ex}");
+                    return false;
                 }
             }
 
             return true;
+        }
+        static bool TryGetAttributeSectionsParent(InventorySubMenu inventorySubMenu, out Transform attributeSectionsParent)
+        {
+            attributeSectionsParent = null;
+
+            Transform attributesParent = inventorySubMenu.AttributesParentConsole?.transform;
+            if (attributesParent?.parent?.parent == null)
+            {
+                return false;
+            }
+
+            Transform root = attributesParent.parent.parent;
+            return TryGetChild(root, 4, out Transform child)
+                && TryGetChild(child, 0, out child)
+                && TryGetChild(child, 2, out child)
+                && TryGetChild(child, 0, out attributeSectionsParent);
+        }
+        static bool TryGetChild(Transform parent, int index, out Transform child)
+        {
+            child = null;
+
+            if (parent == null || parent.childCount <= index)
+            {
+                return false;
+            }
+
+            child = parent.GetChild(index);
+            return child != null;
         }
     }
     public static class DataHUD

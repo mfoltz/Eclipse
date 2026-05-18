@@ -17,6 +17,7 @@ internal static class EmberglassEclipseBridge
     static bool _unavailableLogged;
     static bool _clientReadyLogged;
     static bool _notReadyLogged;
+    static bool _progressReceiptLogged;
     static MethodInfo _sendToServer;
     static PropertyInfo _isReady;
     static EventInfo _onReady;
@@ -121,6 +122,30 @@ internal static class EmberglassEclipseBridge
         if (!ClientChatSystemPatch.TryHandleBridgeServerMessage(packet.Message, out string messageKind))
         {
             Core.Log.LogWarning("[EclipseBridge:Emberglass] failed to verify server message MAC");
+            return;
+        }
+
+        LogReceivedServerMessage(messageKind);
+    }
+
+    static void LogReceivedServerMessage(string messageKind)
+    {
+        if (string.Equals(messageKind, "configs", StringComparison.OrdinalIgnoreCase))
+        {
+            _progressReceiptLogged = false;
+            Core.Log.LogInfo("[EclipseBridge:Emberglass] configs received");
+            return;
+        }
+
+        if (string.Equals(messageKind, "progress", StringComparison.OrdinalIgnoreCase))
+        {
+            if (_progressReceiptLogged)
+            {
+                return;
+            }
+
+            _progressReceiptLogged = true;
+            Core.Log.LogInfo("[EclipseBridge:Emberglass] progress received");
             return;
         }
 
